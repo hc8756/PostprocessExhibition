@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ProjectOutputs>
+    <ProjectOutput>
+      <FullPath>C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\DX11Starter.exe</FullPath>
+    </ProjectOutput>
+  </ProjectOutputs>
+  <ContentFiles>
+    <ContentFile>
+      <FullPath>C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\PixelShader.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\PixelShaderSky.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\PixelShaderSobel.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\VertexShader.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\VertexShaderFull.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\VertexShaderSky.cso</FullPath>
+    </ContentFile>
+  </ContentFiles>
+  <SatelliteDlls />
+  <NonRecipeFileRefs />
+</Project>

@@ -1,0 +1,1 @@
+Added specular map. More visible on first texture.

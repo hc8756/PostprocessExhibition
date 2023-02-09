@@ -1,0 +1,395 @@
+#include "Game.h"
+#include "Vertex.h"
+#include "Input.h"
+
+// Needed for a helper function to read compiled shader files from the hard drive
+#pragma comment(lib, "d3dcompiler.lib")
+#include <d3dcompiler.h>
+#include <math.h>
+
+//For texture
+#include "WICTextureLoader.h"
+#include "DDSTextureLoader.h"
+
+// For the DirectX Math library
+using namespace DirectX;
+
+// --------------------------------------------------------
+// Constructor
+//
+// DXCore (base class) constructor will set up underlying fields.
+// DirectX itself, and our window, are not ready yet!
+//
+// hInstance - the application's OS-level handle (unique ID)
+// --------------------------------------------------------
+Game::Game(HINSTANCE hInstance)
+	: DXCore(
+		hInstance,		   // The application's handle
+		"DirectX Game",	   // Text for the window's title bar
+		1280,			   // Width of the window's client area
+		720,			   // Height of the window's client area
+		true)			   // Show extra stats (fps) in title bar?
+{
+	camera = 0;
+	ambientColor= XMFLOAT3(0.2f, 0.2f, 0.2f);
+#if defined(DEBUG) || defined(_DEBUG)
+	// Do we want a console window?  Probably only in debug mode
+	CreateConsoleWindow(500, 120, 32, 120);
+	printf("Console window created successfully.  Feel free to printf() here.\n");
+#endif
+
+}
+
+// --------------------------------------------------------
+// Destructor - Clean up anything our game has created:
+//  - Release all DirectX objects created here
+//  - Delete any objects to prevent memory leaks
+// --------------------------------------------------------
+Game::~Game()
+{
+
+	for (auto& en : entityList) { 
+		delete en; 
+		en = nullptr;
+	}
+
+	for (auto& mat : materialList) {
+		delete mat;
+		mat = nullptr;
+	}
+
+	delete camera;
+	camera = nullptr;
+
+	delete cube;
+	cube= nullptr;
+
+	delete sphere;
+	sphere = nullptr;
+
+	delete pixelShader;
+	pixelShader = nullptr;
+
+	delete vertexShader;
+	vertexShader = nullptr;
+
+	delete pixelShaderSky;
+	pixelShaderSky = nullptr;
+
+	delete vertexShaderSky;
+	vertexShaderSky = nullptr;
+
+	delete pixelShaderSobel;
+	pixelShaderSobel = nullptr;
+
+	delete vertexShaderFull;
+	vertexShaderFull = nullptr;
+
+	delete sky;
+	sky = nullptr;
+
+}
+
+// --------------------------------------------------------
+// Called once per program, after DirectX and the window
+// are initialized but before the game loop.
+// --------------------------------------------------------
+void Game::Init()
+{
+	// Helper methods for loading shaders, creating some basic
+	// geometry to draw and some simple camera matrices.
+	//  - You'll be expanding and/or replacing these later
+	LoadShaders();
+	CreateBasicGeometry();
+	ResizePostProcessResources();
+	// Tell the input assembler stage of the pipeline what kind of
+	// geometric primitives (points, lines or triangles) we want to draw.  
+	// Essentially: "What kind of shape should the GPU draw with our data?"
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	//Textures
+	//create and zero out a local sampler desc variable
+	D3D11_SAMPLER_DESC samplerDesc = {};
+	//required aaaaa
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	//different filter modes
+	//samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	//samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+	samplerDesc.MaxAnisotropy = 5;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	//create sampler state
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
+	device->CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
+	//create srv's
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> earthAlbedoSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> earthMetalSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> earthRoughnessSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> earthNormalSRV;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> moonAlbedoSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> moonRoughnessSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> moonNormalSRV;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> skySRV;
+	//Load texture
+
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/earth_albedo.jpg").c_str(), 0, earthAlbedoSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/universal_metal.jpg").c_str(), 0, earthMetalSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/earth_roughness.jpg").c_str(), 0, earthRoughnessSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/earth_normal.jpg").c_str(), 0, earthNormalSRV.GetAddressOf());
+
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/moon_albedo.jpg").c_str(), 0, moonAlbedoSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/moon_roughness.jpg").c_str(), 0, moonRoughnessSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/moon_normal.jpg").c_str(), 0, moonNormalSRV.GetAddressOf());
+
+	CreateDDSTextureFromFile(device.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/space_sky.dds").c_str(), 0, skySRV.GetAddressOf());
+	
+	//create sky
+	sky = new Sky(
+		samplerState,
+		skySRV,
+		cube,
+		pixelShaderSky,
+		vertexShaderSky,
+		device,
+		context);
+
+	//create materials
+	Material* material1 = new Material(DirectX::XMFLOAT3(+2.5f, +2.5f, +2.5f),0.0f,pixelShader,vertexShader);
+	material1->AddSamplerState("BasicSamplerState", samplerState);
+	material1->AddTextureSRV("Albedo", earthAlbedoSRV);
+	material1->AddTextureSRV("MetalnessMap", earthMetalSRV);
+	material1->AddTextureSRV("RoughnessMap", earthRoughnessSRV);
+	material1->AddTextureSRV("NormalMap", earthNormalSRV);
+
+	Material* material2 = new Material(DirectX::XMFLOAT3(+2.5f, +2.5f, +2.5f), 0.0f, pixelShader, vertexShader);
+	material2->AddSamplerState("BasicSamplerState", samplerState);
+	material2->AddTextureSRV("Albedo", moonAlbedoSRV);
+	material2->AddTextureSRV("MetalnessMap", earthMetalSRV);
+	material2->AddTextureSRV("RoughnessMap", moonRoughnessSRV);
+	material2->AddTextureSRV("NormalMap", moonNormalSRV);
+
+	materialList.push_back(material1);
+	materialList.push_back(material2);
+
+	//Create entities
+	GameEntity* entity1 = new GameEntity(sphere,material1);
+	GameEntity* entity2 = new GameEntity(sphere, material2);
+
+	//add entities to the entitiy list
+	entityList.push_back(entity1);
+	entityList.push_back(entity2);
+
+	//move model entities around so that they don't overlap
+	entityList[0]->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
+	entityList[1]->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
+
+
+	//create camera 
+	camera = new Camera(0, 0, -10, 5.0f, 5.0f, XM_PIDIV4, (float)width / height);
+
+	//default normal and uv values
+	defNormal = XMFLOAT3(+0.0f, +0.0f, -1.0f);
+	defUV = XMFLOAT2(+0.0f, +0.0f);
+
+	//Sunlight from the left
+	Light directionalLight1 = {};
+	directionalLight1.Type = 0;
+	directionalLight1.Direction= XMFLOAT3(1.0f, 0.0f, 0.0f);
+	directionalLight1.Color= XMFLOAT3(0.1f, 0.1f, 0.1f);
+	directionalLight1.Intensity = 10.0f;
+	//add entities to the entitiy list
+	lightList.push_back(directionalLight1);
+}
+
+// --------------------------------------------------------
+// Loads shaders from compiled shader object (.cso) files
+// and also created the Input Layout that describes our 
+// vertex data to the rendering pipeline. 
+// - Input Layout creation is done here because it must 
+//    be verified against vertex shader byte code
+// - We'll have that byte code already loaded below
+// --------------------------------------------------------
+void Game::LoadShaders()
+{
+	vertexShader = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShader.cso").c_str()); 
+	pixelShader = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShader.cso").c_str());
+	vertexShaderSky = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShaderSky.cso").c_str());
+	pixelShaderSky = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderSky.cso").c_str());
+	vertexShaderFull = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShaderFull.cso").c_str());
+	pixelShaderSobel = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderSobel.cso").c_str());
+}
+
+void Game::CreateBasicGeometry()
+{
+	cube = new Mesh(GetFullPathTo("../../Assets/Models/cube.obj").c_str(), device);
+	sphere = new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device);
+}
+
+
+// --------------------------------------------------------
+// Handle resizing DirectX "stuff" to match the new window size.
+// For instance, updating our projection matrix's aspect ratio.
+// --------------------------------------------------------
+void Game::OnResize()
+{
+	// Handle base-level DX resize stuff
+	DXCore::OnResize();
+	if (camera)
+	{
+		camera->UpdateProjectionMatrix((float)width / height);
+	}
+}
+
+void Game::ResizePostProcessResources()
+{
+	// Reset all resources 
+	ppRTV.Reset();
+	ppSRV.Reset();
+	sceneNormalsRTV.Reset();
+	sceneNormalsSRV.Reset();
+	sceneDepthRTV.Reset();
+	sceneDepthSRV.Reset();
+
+	// Describe our textures
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = width;
+	textureDesc.Height = height;
+	textureDesc.ArraySize = 1;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE; 
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.MipLevels = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	// Create the color and normals textures
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> ppTexture;
+	device->CreateTexture2D(&textureDesc, 0, ppTexture.GetAddressOf());
+
+	// Adjust the description for scene normals
+	textureDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> sceneNormalsTexture;
+	device->CreateTexture2D(&textureDesc, 0, sceneNormalsTexture.GetAddressOf());
+
+	// Adjust the description for the scene depths
+	textureDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> sceneDepthsTexture;
+	device->CreateTexture2D(&textureDesc, 0, sceneDepthsTexture.GetAddressOf());
+
+	// Create the Render Target Views (null descriptions use default settings)
+	device->CreateRenderTargetView(ppTexture.Get(), 0, ppRTV.GetAddressOf());
+	device->CreateRenderTargetView(sceneNormalsTexture.Get(), 0, sceneNormalsRTV.GetAddressOf());
+	device->CreateRenderTargetView(sceneDepthsTexture.Get(), 0, sceneDepthRTV.GetAddressOf());
+
+	// Create the Shader Resource Views (null descriptions use default settings)
+	device->CreateShaderResourceView(ppTexture.Get(), 0, ppSRV.GetAddressOf());
+	device->CreateShaderResourceView(sceneNormalsTexture.Get(), 0, sceneNormalsSRV.GetAddressOf());
+	device->CreateShaderResourceView(sceneDepthsTexture.Get(), 0, sceneDepthSRV.GetAddressOf());
+}
+
+
+// --------------------------------------------------------
+// Update your game here - user input, move objects, AI, etc.
+// --------------------------------------------------------
+void Game::Update(float deltaTime, float totalTime)
+{
+	// Example input checking: Quit if the escape key is pressed
+	if (Input::GetInstance().KeyDown(VK_ESCAPE))
+		Quit();
+
+	//make items rotate along y axis
+	static float increment = 0.5f;
+	increment += 0.0005f;
+	
+	//scale correctly 
+	entityList[0]->GetTransform()->SetScale(1.0f, 1.0f, 1.0f); 
+	entityList[1]->GetTransform()->SetScale(0.25f, 0.25f, 0.25f);
+	entityList[0]->GetTransform()->SetRotation(0.0f, increment/2, 0.0f);
+	entityList[1]->GetTransform()->SetPosition(2*sin(increment), 0.0f, 2*cos(increment));
+
+	//code that will alter fov based on user input
+	float fov = camera->GetFoV();
+	if (Input::GetInstance().KeyDown('P')) {
+		fov += 1 * deltaTime;
+		camera->SetFoV(fov);
+	}
+	if (Input::GetInstance().KeyDown('O')) {
+		fov -= 1 * deltaTime;
+		camera->SetFoV(fov);
+	}
+
+	camera->Update(deltaTime);
+}
+
+// --------------------------------------------------------
+// Clear the screen, redraw everything, present to the user
+// --------------------------------------------------------
+void Game::Draw(float deltaTime, float totalTime)
+{
+	PreRender();
+
+	//call game entity drawing method for each entitiy
+	//also set up lighting stuff
+	for (int i = 0; i < entityList.size(); i++) {
+		entityList[i]->GetMaterial()->GetPixelShader()->SetFloat3("ambientColor",ambientColor);
+		entityList[i]->GetMaterial()->GetPixelShader()->SetData("lights", &lightList[0], sizeof(Light) * (int)lightList.size());
+		entityList[i]->Draw(context,camera);
+	}
+	//draw sky
+	sky->Draw(context, camera);
+	PostRender();
+	swapChain->Present(0, 0);
+	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), depthStencilView.Get());
+}
+
+void Game::PreRender()
+{
+	// Background color 
+	const float color[4] = { 0, 0, 0, 1 };
+
+	// Clear the render target and depth buffer
+	context->ClearRenderTargetView(backBufferRTV.Get(), color);
+	context->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	// Clear all render targets
+	context->ClearRenderTargetView(ppRTV.Get(), color);
+	context->ClearRenderTargetView(sceneNormalsRTV.Get(), color);
+	context->ClearRenderTargetView(sceneDepthRTV.Get(), color);
+
+	ID3D11RenderTargetView* rtvs[3] =
+	{
+		backBufferRTV.Get(),
+		sceneNormalsRTV.Get(),
+		sceneDepthRTV.Get()
+	};
+
+	rtvs[0] = ppRTV.Get();
+	context->OMSetRenderTargets(3, rtvs, depthStencilView.Get());
+}
+
+void Game::PostRender()
+{
+
+	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), 0);
+
+	// Set up post process shaders
+	vertexShaderFull->SetShader();
+	pixelShaderSobel->SetShader();
+	pixelShaderSobel->SetShaderResourceView("image", ppSRV.Get());
+	pixelShaderSobel->SetSamplerState("samplerOptions", clampSampler.Get());
+	pixelShaderSobel->SetFloat("pixelWidth", 1.0f / width);
+	pixelShaderSobel->SetFloat("pixelHeight", 1.0f / height);
+	pixelShaderSobel->CopyAllBufferData();
+
+	// Draw 3 vertices
+	context->Draw(3, 0);
+	// Unbind shader resource views at the end of the frame
+	ID3D11ShaderResourceView* nullSRVs[128] = {};
+	context->PSSetShaderResources(0, ARRAYSIZE(nullSRVs), nullSRVs);
+}

@@ -1,23 +1,2 @@
-﻿  compilation object save succeeded; see C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\PixelShader.cso
-  compilation object save succeeded; see C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\PixelShaderSky.cso
-C:\Users\hc8756\Documents\GitHub\750project\PixelShaderSobel.hlsl(43,11): warning X3078: 'i': loop control variable conflicts with a previous declaration in the outer scope; most recent declaration will be used
-  
-  compilation object save succeeded; see C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\PixelShaderSobel.cso
-C:\Users\hc8756\Documents\GitHub\750project\VertexShader.hlsl(11,18-45): warning X3578: Output value 'main' is not completely initialized
-  
-  compilation object save succeeded; see C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\VertexShader.cso
-  compilation object save succeeded; see C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\VertexShaderFull.cso
-  compilation object save succeeded; see C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\VertexShaderSky.cso
-  Camera.cpp
-  DXCore.cpp
-  Game.cpp
-  GameEntity.cpp
-  Input.cpp
-  Main.cpp
-  Material.cpp
-  Mesh.cpp
-  SimpleShader.cpp
-  Sky.cpp
-  Transform.cpp
-  Generating Code...
-  DX11Starter.vcxproj -> C:\Users\hc8756\Documents\GitHub\750project\x64\Debug\DX11Starter.exe
+﻿  Game.cpp
+  DX11Starter.vcxproj -> C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\DX11Starter.exe

@@ -37,6 +37,8 @@ public:
 	int GetMouseY();
 	int GetMouseXDelta();
 	int GetMouseYDelta();
+	void CenterMouse();
+	void SwapMouseVisible();
 	float GetMouseWheel();
 	void SetWheelDelta(float delta);
 
@@ -78,6 +80,7 @@ private:
 	int mouseXDelta;
 	int mouseYDelta;
 	float wheelDelta;
+	bool mouseVisible;
 
 	// The window's handle (id) from the OS, so
 	// we can get the cursor's position

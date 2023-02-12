@@ -83,6 +83,7 @@ void Input::Initialize(HWND windowHandle)
 	mouseX = 0; mouseY = 0;
 	prevMouseX = 0; prevMouseY = 0;
 	mouseXDelta = 0; mouseYDelta = 0;
+	mouseVisible = true;
 
 	this->windowHandle = windowHandle;
 }
@@ -141,6 +142,38 @@ int Input::GetMouseY() { return mouseY; }
 // ---------------------------------------------------------------
 int Input::GetMouseXDelta() { return mouseXDelta; }
 int Input::GetMouseYDelta() { return mouseYDelta; }
+
+void Input::CenterMouse()
+{
+	if (GetActiveWindow() != windowHandle) {
+		return;
+	}
+
+	WINDOWINFO info = {};
+	info.cbSize = sizeof(WINDOWINFO); // documentation says this is necessary
+	GetWindowInfo(windowHandle, &info);
+	RECT windowCoords = info.rcWindow;
+	
+	POINT mousePos = {};
+	mousePos.x = (windowCoords.right - windowCoords.left) / 2;
+	mousePos.y = (windowCoords.bottom - windowCoords.top) / 2;
+	
+	mouseX = mousePos.x;
+	mouseY = mousePos.y;
+	prevMouseX = mouseX;
+	prevMouseY = mouseY;
+	mouseXDelta = 0;
+	mouseYDelta = 0;
+	
+	ClientToScreen(windowHandle, &mousePos);
+	SetCursorPos(mousePos.x, mousePos.y);
+}
+
+void Input::SwapMouseVisible()
+{
+	mouseVisible = !mouseVisible;
+	ShowCursor(mouseVisible);
+}
 
 
 // ---------------------------------------------------------------

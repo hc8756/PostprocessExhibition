@@ -11,8 +11,6 @@ Camera::Camera(float x, float y, float z, float moveSpeed, float lookSpeed, floa
 	transform.SetPosition(x, y, z);
 	UpdateViewMatrix();
 	UpdateProjectionMatrix(aspectRatio);
-	firstPerson = false;
-	SwapFirstPerson(); // start in first person
 	Input::GetInstance().CenterMouse(); // start with the mouse in the center so there is no jump at the beginning
 }
 
@@ -25,43 +23,36 @@ void Camera::Update(float dt)
 	// Get a reference to the input manager
 	Input& input = Input::GetInstance();
 
-	if (firstPerson) {
-		//Calculate current speed
-		float speed = movementSpeed * dt;
+	//Calculate current speed
+	float speed = movementSpeed * dt;
 
-		// Movement
-		if (input.KeyDown('W')) { transform.MoveRelative(0, 0, speed); }
-		if (input.KeyDown('S')) { transform.MoveRelative(0, 0, -speed); }
-		if (input.KeyDown('A')) { transform.MoveRelative(-speed, 0, 0); }
-		if (input.KeyDown('D')) { transform.MoveRelative(speed, 0, 0); }
-		if (input.KeyDown(VK_SHIFT)) { transform.MoveAbsolute(0, -speed, 0); }
-		if (input.KeyDown(VK_SPACE)) { transform.MoveAbsolute(0, speed, 0); }
+	// Movement
+	if (input.KeyDown('W')) { transform.MoveRelative(0, 0, speed); }
+	if (input.KeyDown('S')) { transform.MoveRelative(0, 0, -speed); }
+	if (input.KeyDown('A')) { transform.MoveRelative(-speed, 0, 0); }
+	if (input.KeyDown('D')) { transform.MoveRelative(speed, 0, 0); }
+	if (input.KeyDown(VK_SHIFT)) { transform.MoveAbsolute(0, -speed, 0); }
+	if (input.KeyDown(VK_SPACE)) { transform.MoveAbsolute(0, speed, 0); }
 
-		// Calculate how much the cursor changed
-		float xDiff = dt * mouseLookSpeed * input.GetMouseXDelta();
-		float yDiff = dt * mouseLookSpeed * input.GetMouseYDelta();
+	// Calculate how much the cursor changed
+	float xDiff = dt * mouseLookSpeed * input.GetMouseXDelta();
+	float yDiff = dt * mouseLookSpeed * input.GetMouseYDelta();
 
-		// Roate the transform! SWAP X AND Y!
-		transform.Rotate(yDiff, xDiff, 0);
+	// Roate the transform! SWAP X AND Y!
+	transform.Rotate(yDiff, xDiff, 0);
 
-		// limit vertical to straight up and down
-		if (transform.GetPitchYawRoll().x > XM_PIDIV2 - 0.1f) {
-			transform.SetRotation(XM_PIDIV2 - 0.1f, transform.GetPitchYawRoll().y, transform.GetPitchYawRoll().z);
-		}
-		else if (transform.GetPitchYawRoll().x < -XM_PIDIV2 + 0.1f) {
-			transform.SetRotation(-XM_PIDIV2 + 0.1f, transform.GetPitchYawRoll().y, transform.GetPitchYawRoll().z);
-		}
-
-		// At the end, update the view
-		UpdateViewMatrix();
-
-		input.CenterMouse();
+	// limit vertical to straight up and down
+	if (transform.GetPitchYawRoll().x > XM_PIDIV2 - 0.1f) {
+		transform.SetRotation(XM_PIDIV2 - 0.1f, transform.GetPitchYawRoll().y, transform.GetPitchYawRoll().z);
 	}
-	// else: using mouse pointer, so no camera movement
-
-	if (input.KeyPress('R')) {
-		SwapFirstPerson();
+	else if (transform.GetPitchYawRoll().x < -XM_PIDIV2 + 0.1f) {
+		transform.SetRotation(-XM_PIDIV2 + 0.1f, transform.GetPitchYawRoll().y, transform.GetPitchYawRoll().z);
 	}
+
+	// At the end, update the view
+	UpdateViewMatrix();
+
+	input.CenterMouse();
 }
 
 void Camera::UpdateViewMatrix()
@@ -108,10 +99,4 @@ void Camera::SetFoV(float fov)
 {
 	fieldOfView = fov;
 	UpdateProjectionMatrix(aspectRatio);
-}
-
-void Camera::SwapFirstPerson()
-{
-	firstPerson = !firstPerson;
-	Input::GetInstance().SwapMouseVisible();
 }

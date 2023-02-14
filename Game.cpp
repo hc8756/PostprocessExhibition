@@ -213,6 +213,9 @@ void Game::Init()
 	directionalLight1.Intensity = 10.0f;
 	//add entities to the entitiy list
 	lightList.push_back(directionalLight1);
+
+	firstPerson = true;
+	Input::GetInstance().SwapMouseVisible();
 }
 
 // --------------------------------------------------------
@@ -334,7 +337,13 @@ void Game::Update(float deltaTime, float totalTime)
 		camera->SetFoV(fov);
 	}
 
-	camera->Update(deltaTime);
+	if (Input::GetInstance().KeyDown('R')) {
+		firstPerson = !firstPerson;
+		Input::GetInstance().SwapMouseVisible();
+	}
+	if (firstPerson) {
+		camera->Update(deltaTime);
+	}
 }
 
 // --------------------------------------------------------

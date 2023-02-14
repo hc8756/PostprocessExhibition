@@ -34,7 +34,7 @@ private:
 	void CreateBasicGeometry();
 	void ResizePostProcessResources();
 
-
+	bool firstPerson;
 
 	
 	// Note the usage of ComPtr below

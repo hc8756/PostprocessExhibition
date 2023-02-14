@@ -20,7 +20,6 @@ public:
 	Transform* GetTransform();
 	float GetFoV();
 	void SetFoV(float fov);
-	void SwapFirstPerson();
 
 private:
 	DirectX::XMFLOAT4X4 viewMatrix;
@@ -31,5 +30,4 @@ private:
 	float mouseLookSpeed;
 	float fieldOfView;
 	float aspectRatio;
-	bool firstPerson;
 };

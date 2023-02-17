@@ -25,6 +25,7 @@ Exhibit::Exhibit(DirectX::XMFLOAT3 origin, float size, bool posXWall, bool negXW
 
 Exhibit::~Exhibit()
 {
+	delete floor;
 }
 
 // places the entity relative to the origin of this room for convenience

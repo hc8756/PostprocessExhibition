@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Vertex.h"
 #include "Input.h"
+#include "Exhibit.h"
 
 // Needed for a helper function to read compiled shader files from the hard drive
 #pragma comment(lib, "d3dcompiler.lib")
@@ -132,6 +133,11 @@ void Game::Init()
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> moonRoughnessSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> moonNormalSRV;
 
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneAlbedoSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneMetalSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneRoughnessSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneNormalSRV;
+
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> skySRV;
 	//Load texture
 
@@ -144,15 +150,20 @@ void Game::Init()
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/moon_roughness.jpg").c_str(), 0, moonRoughnessSRV.GetAddressOf());
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/moon_normal.jpg").c_str(), 0, moonNormalSRV.GetAddressOf());
 
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/cobblestone/cobblestone_albedo.png").c_str(), 0, cobblestoneAlbedoSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/cobblestone/cobblestone_metal.png").c_str(), 0, cobblestoneMetalSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/cobblestone/cobblestone_roughness.png").c_str(), 0, cobblestoneRoughnessSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/cobblestone/cobblestone_normal.png").c_str(), 0, cobblestoneNormalSRV.GetAddressOf());
+
 	//CreateDDSTextureFromFile(device.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/SunnyCubeMap.dds").c_str(), 0, skySRV.GetAddressOf());
 	
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> spaceBox = CreateCubemap(
-		GetFullPathTo_Wide(L"../../Assets/Textures/SpaceSkyBox/Left_Tex.png").c_str(),
-		GetFullPathTo_Wide(L"../../Assets/Textures/SpaceSkyBox/Right_Tex.png").c_str(),
-		GetFullPathTo_Wide(L"../../Assets/Textures/SpaceSkyBox/Up_Tex.png").c_str(),
-		GetFullPathTo_Wide(L"../../Assets/Textures/SpaceSkyBox/Down_Tex.png").c_str(),
-		GetFullPathTo_Wide(L"../../Assets/Textures/SpaceSkyBox/Front_Tex.png").c_str(),
-		GetFullPathTo_Wide(L"../../Assets/Textures/SpaceSkyBox/Back_Tex.png").c_str()
+		GetFullPathTo_Wide(L"../../Assets/Textures/SmallerSpaceBox/Left_Tex.png").c_str(),
+		GetFullPathTo_Wide(L"../../Assets/Textures/SmallerSpaceBox/Right_Tex.png").c_str(),
+		GetFullPathTo_Wide(L"../../Assets/Textures/SmallerSpaceBox/Up_Tex.png").c_str(),
+		GetFullPathTo_Wide(L"../../Assets/Textures/SmallerSpaceBox/Down_Tex.png").c_str(),
+		GetFullPathTo_Wide(L"../../Assets/Textures/SmallerSpaceBox/Front_Tex.png").c_str(),
+		GetFullPathTo_Wide(L"../../Assets/Textures/SmallerSpaceBox/Back_Tex.png").c_str()
 	);
 
 	//create sky
@@ -182,8 +193,19 @@ void Game::Init()
 	material2->AddTextureSRV("RoughnessMap", moonRoughnessSRV);
 	material2->AddTextureSRV("NormalMap", moonNormalSRV);
 
+	Material* material3 = new Material(DirectX::XMFLOAT3(+2.5f, +2.5f, +2.5f), 0.0f, pixelShader, vertexShader);
+	material3->AddSamplerState("BasicSamplerState", samplerState);
+	material3->AddTextureSRV("Albedo", cobblestoneAlbedoSRV);
+	material3->AddTextureSRV("MetalnessMap", cobblestoneMetalSRV);
+	material3->AddTextureSRV("RoughnessMap", cobblestoneRoughnessSRV);
+	material3->AddTextureSRV("NormalMap", cobblestoneNormalSRV);
+
 	materialList.push_back(material1);
 	materialList.push_back(material2);
+	materialList.push_back(material3);
+
+	//Exhibit::cube = cube;
+	//Exhibit::surface = material3;
 
 	//Create entities
 	GameEntity* entity1 = new GameEntity(sphere,material1);
@@ -337,7 +359,7 @@ void Game::Update(float deltaTime, float totalTime)
 		camera->SetFoV(fov);
 	}
 
-	if (Input::GetInstance().KeyDown('R')) {
+	if (Input::GetInstance().KeyPress('R')) {
 		firstPerson = !firstPerson;
 		Input::GetInstance().SwapMouseVisible();
 	}

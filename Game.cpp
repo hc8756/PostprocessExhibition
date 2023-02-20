@@ -385,6 +385,20 @@ void Game::Draw(float deltaTime, float totalTime)
 	//draw sky
 	sky->Draw(context, camera);
 	PostRender();
+
+	//draw ImGui elements
+	// Start the Dear ImGui frame
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+	//Create ImGui Test Window
+	ImGui::Begin("Test");
+	ImGui::End();
+	//Assemble Together Draw Data
+	ImGui::Render();
+	//Render Draw Data
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
 	swapChain->Present(0, 0);
 	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), depthStencilView.Get());
 }

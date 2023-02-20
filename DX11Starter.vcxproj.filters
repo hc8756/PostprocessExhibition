@@ -16,6 +16,12 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{e76f01f5-08db-40d4-8720-b5b21f7ec0a3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ImGui">
+      <UniqueIdentifier>{0ecb7e47-bae7-4b96-a7f1-6f39d0f23214}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ImGui">
+      <UniqueIdentifier>{48e6af01-0e05-45b6-a069-f3130a273a41}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXCore.cpp">
@@ -53,6 +59,24 @@
     </ClCompile>
     <ClCompile Include="Exhibit.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\ImGui\imgui.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\ImGui\imgui_draw.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\ImGui\imgui_impl_dx11.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\ImGui\imgui_impl_win32.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\ImGui\imgui_tables.cpp">
+      <Filter>Source Files\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets\ImGui\imgui_widgets.cpp">
+      <Filter>Source Files\ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +118,30 @@
     </ClInclude>
     <ClInclude Include="Exhibit.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\ImGui\imconfig.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\ImGui\imgui.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\ImGui\imgui_impl_dx11.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\ImGui\imgui_impl_win32.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\ImGui\imgui_internal.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\ImGui\imstb_rectpack.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\ImGui\imstb_textedit.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets\ImGui\imstb_truetype.h">
+      <Filter>Header Files\ImGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -14,8 +14,11 @@ DXCore* DXCore::DXCoreInstance = 0;
 // This needs to be a global function (not part of a class), but we want
 // to forward the parameters to our class to properly handle them.
 // --------------------------------------------------------
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT DXCore::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+		return true;
 	return DXCoreInstance->ProcessMessage(hWnd, uMsg, wParam, lParam);
 }
 
@@ -57,6 +60,8 @@ DXCore::DXCore(
 	this->deltaTime = 0;
 	this->startTime = 0;
 	this->totalTime = 0;
+
+	
 
 	// Query performance counter for accurate timing information
 	__int64 perfFreq;
@@ -146,6 +151,8 @@ HRESULT DXCore::InitWindow()
 		DWORD error = GetLastError();
 		return HRESULT_FROM_WIN32(error);
 	}
+
+	
 
 	// The window exists but is not visible yet
 	// We need to tell Windows to show it, and how to show it
@@ -279,6 +286,14 @@ HRESULT DXCore::InitDirectX()
 	viewport.MinDepth	= 0.0f;
 	viewport.MaxDepth	= 1.0f;
 	context->RSSetViewports(1, &viewport);
+
+	// Setup ImGui
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui_ImplWin32_Init(hWnd);
+	ImGui_ImplDX11_Init(this->device.Get(), this->context.Get());
+	ImGui::StyleColorsDark();
 
 	// Return the "everything is ok" HRESULT value
 	return S_OK;

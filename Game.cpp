@@ -54,6 +54,11 @@ Game::~Game()
 		en = nullptr;
 	}
 
+	for (auto& exh : exhibits) {
+		delete exh;
+		exh = nullptr;
+	}
+
 	for (auto& mat : materialList) {
 		delete mat;
 		mat = nullptr;
@@ -204,9 +209,6 @@ void Game::Init()
 	materialList.push_back(material2);
 	materialList.push_back(material3);
 
-	//Exhibit::cube = cube;
-	//Exhibit::surface = material3;
-
 	//Create entities
 	GameEntity* entity1 = new GameEntity(sphere,material1);
 	GameEntity* entity2 = new GameEntity(sphere, material2);
@@ -238,6 +240,13 @@ void Game::Init()
 
 	firstPerson = true;
 	Input::GetInstance().SwapMouseVisible();
+
+	// set up exhibits
+	/*Exhibit::cube = cube;
+	Exhibit::surface = material3;*/
+	//Exhibit::structureTemplate = new GameEntity(cube, material3);
+	Exhibit::SetStructureTemplate(new GameEntity(cube, material3));
+	exhibits.push_back(new Exhibit(DirectX::XMFLOAT3(0, 0, 0), 10, false, false, true, false));
 }
 
 // --------------------------------------------------------
@@ -440,7 +449,7 @@ void Game::PostRender()
 	pixelShaderSobel->SetSamplerState("samplerOptions", clampSampler.Get());
 	pixelShaderSobel->SetFloat("pixelWidth", 1.0f / width);
 	pixelShaderSobel->SetFloat("pixelHeight", 1.0f / height);
-	pixelShaderSobel->CopyAllBufferData();
+	//pixelShaderSobel->CopyAllBufferData();
 
 	// Draw 3 vertices
 	context->Draw(3, 0);

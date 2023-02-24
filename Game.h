@@ -11,6 +11,7 @@
 #include "Material.h"
 #include "Lights.h"
 #include "Sky.h"
+#include "Exhibit.h"
 
 
 class Game 
@@ -62,6 +63,7 @@ private:
 
 	//my game entities
 	std::vector<GameEntity*> entityList = {};
+	std::vector<Exhibit*> exhibits = {};
 
 	//my materials
 	std::vector<Material*> materialList = {};

@@ -2,27 +2,27 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\DX11Starter.exe</FullPath>
+      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\DX11Starter.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShader.cso</FullPath>
+      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\PixelShader.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShaderSky.cso</FullPath>
+      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\PixelShaderSky.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShaderSobel.cso</FullPath>
+      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\PixelShaderSobel.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\VertexShader.cso</FullPath>
+      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\VertexShader.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\VertexShaderFull.cso</FullPath>
+      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\VertexShaderFull.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\VertexShaderSky.cso</FullPath>
+      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\VertexShaderSky.cso</FullPath>
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />

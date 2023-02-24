@@ -88,6 +88,9 @@ Game::~Game()
 	delete pixelShaderSobel;
 	pixelShaderSobel = nullptr;
 
+	delete pixelShaderBrightCont;
+	pixelShaderBrightCont = nullptr;
+
 	delete vertexShaderFull;
 	vertexShaderFull = nullptr;
 
@@ -265,6 +268,7 @@ void Game::LoadShaders()
 	pixelShaderSky = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderSky.cso").c_str());
 	vertexShaderFull = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShaderFull.cso").c_str());
 	pixelShaderSobel = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderSobel.cso").c_str());
+	pixelShaderBrightCont = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderBrightCont.cso").c_str());
 }
 
 void Game::CreateBasicGeometry()
@@ -449,7 +453,13 @@ void Game::PostRender()
 	pixelShaderSobel->SetSamplerState("samplerOptions", clampSampler.Get());
 	pixelShaderSobel->SetFloat("pixelWidth", 1.0f / width);
 	pixelShaderSobel->SetFloat("pixelHeight", 1.0f / height);
-	//pixelShaderSobel->CopyAllBufferData();
+
+	pixelShaderBrightCont->SetShader();
+	pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
+	pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
+	pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
+	pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
+	pixelShaderBrightCont->CopyAllBufferData();
 
 	// Draw 3 vertices
 	context->Draw(3, 0);

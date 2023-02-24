@@ -1,2 +1,4 @@
-﻿  Exhibit.cpp
-  DX11Starter.vcxproj -> D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\DX11Starter.exe
+﻿Z:\IGMProfile\Desktop\GGP\750project\PixelShaderBrightCont.hlsl(43,11): warning X3078: 'i': loop control variable conflicts with a previous declaration in the outer scope; most recent declaration will be used
+  
+  compilation object save succeeded; see Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\PixelShaderBrightCont.cso
+  DX11Starter.vcxproj -> Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\DX11Starter.exe

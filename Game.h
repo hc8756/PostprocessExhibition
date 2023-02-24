@@ -54,6 +54,8 @@ private:
 	SimplePixelShader* pixelShaderSky;
 	SimpleVertexShader* vertexShaderSky;
 	SimplePixelShader* pixelShaderSobel;
+	//shader that effects brightness and contrast in post processing
+	SimplePixelShader* pixelShaderBrightCont;
 	SimpleVertexShader* vertexShaderFull;
 
 	//my models

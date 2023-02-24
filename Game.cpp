@@ -54,11 +54,6 @@ Game::~Game()
 		en = nullptr;
 	}
 
-	for (auto& exh : exhibits) {
-		delete exh;
-		exh = nullptr;
-	}
-
 	for (auto& mat : materialList) {
 		delete mat;
 		mat = nullptr;
@@ -242,11 +237,7 @@ void Game::Init()
 	Input::GetInstance().SwapMouseVisible();
 
 	// set up exhibits
-	/*Exhibit::cube = cube;
-	Exhibit::surface = material3;*/
-	//Exhibit::structureTemplate = new GameEntity(cube, material3);
-	Exhibit::SetStructureTemplate(new GameEntity(cube, material3));
-	exhibits.push_back(new Exhibit(DirectX::XMFLOAT3(0, 0, 0), 10, false, false, true, false));
+	exhibits.push_back(new Exhibit(entityList, cube, material3, DirectX::XMFLOAT3(0, 0, 0), 10, false, false, true, false));
 }
 
 // --------------------------------------------------------

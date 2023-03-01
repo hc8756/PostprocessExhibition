@@ -54,9 +54,12 @@ private:
 	SimplePixelShader* pixelShaderSky;
 	SimpleVertexShader* vertexShaderSky;
 	SimplePixelShader* pixelShaderSobel;
-	//shader that effects brightness and contrast in post processing
-	SimplePixelShader* pixelShaderBrightCont;
 	SimpleVertexShader* vertexShaderFull;
+
+	//Exhibit 1
+	SimplePixelShader* pixelShaderBrightCont;//shader that effects brightness and contrast in post processing
+	float brightness;
+	float contrast;
 
 	//my models
 	Mesh* cube;

@@ -34,7 +34,17 @@ void Camera::Update(float dt)
 	if (input.KeyDown(VK_SHIFT)) { transform.MoveAbsolute(0, -speed, 0); }
 	if (input.KeyDown(VK_SPACE)) { transform.MoveAbsolute(0, speed, 0); }
 
+	// Limit vertical values
+	if (transform.GetPosition().y < 1) {
+		transform.SetPosition(transform.GetPosition().x, 1, transform.GetPosition().z);
+	}
+	else if (transform.GetPosition().y > 12) {
+		transform.SetPosition(transform.GetPosition().x, 12, transform.GetPosition().z);
+	}
+
 	// Calculate how much the cursor changed
+	if (input.KeyPress('1')) { mouseLookSpeed -= 0.01f; }
+	if (input.KeyPress('2')) { mouseLookSpeed += 0.01f; }
 	float xDiff = dt * mouseLookSpeed * input.GetMouseXDelta();
 	float yDiff = dt * mouseLookSpeed * input.GetMouseYDelta();
 

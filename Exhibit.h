@@ -21,7 +21,7 @@ private:
 	GameEntity* negZWall;
 
 	const float THICKNESS = 1;
-	const float WALL_HEIGHT = 3;
+	const float WALL_HEIGHT = 6;
 
 	void PlaceStructures();
 };

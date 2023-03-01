@@ -55,9 +55,13 @@ void Exhibit::AttachTo(Exhibit* other, const DirectX::XMFLOAT3& directionFromOth
 // moves all floors and walls to the correct
 void Exhibit::PlaceStructures()
 {
-	//floor->GetTransform()->SetPosition(origin.x, -floor->GetTransform()->GetScale().y / 2, origin.z); // top is at y = 0
-	//posXWall->GetTransform()->SetPosition(origin.x + size, floor->GetTransform()->GetScale().y / 2, origin.z);
-	//negXWall->GetTransform()->SetPosition(origin.x - size, floor->GetTransform()->GetScale().y / 2, origin.z);
-	//posZWall->GetTransform()->SetPosition(origin.x, floor->GetTransform()->GetScale().y / 2, origin.z + size);
-	//negZWall->GetTransform()->SetPosition(origin.x, floor->GetTransform()->GetScale().y / 2, origin.z - size);
+	floor->GetTransform()->SetPosition(origin.x, -floor->GetTransform()->GetScale().y / 2, origin.z); // top is at y = 0
+	if(posXWall != nullptr)
+		posXWall->GetTransform()->SetPosition(origin.x + size / 2, posXWall->GetTransform()->GetScale().y / 2, origin.z);
+	if(negXWall != nullptr)
+		negXWall->GetTransform()->SetPosition(origin.x - size / 2, negXWall->GetTransform()->GetScale().y / 2, origin.z);
+	if(posZWall != nullptr)
+		posZWall->GetTransform()->SetPosition(origin.x, posZWall->GetTransform()->GetScale().y / 2, origin.z + size / 2);
+	if(negZWall != nullptr)
+		negZWall->GetTransform()->SetPosition(origin.x, negZWall->GetTransform()->GetScale().y / 2, origin.z - size / 2);
 }

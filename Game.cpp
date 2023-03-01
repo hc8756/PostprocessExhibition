@@ -237,7 +237,12 @@ void Game::Init()
 	Input::GetInstance().SwapMouseVisible();
 
 	// set up exhibits
-	exhibits.push_back(new Exhibit(entityList, cube, material3, DirectX::XMFLOAT3(0, 0, 0), 10, false, false, true, false));
+	entityList[0]->GetTransform()->SetScale(1.0f, 1.0f, 1.0f); // earth scale
+	entityList[1]->GetTransform()->SetScale(0.25f, 0.25f, 0.25f); // moon scale
+
+	exhibits.push_back(new Exhibit(entityList, cube, material3, DirectX::XMFLOAT3(0, 0, 0), 25, false, false, true, true));
+	exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
+
 }
 
 // --------------------------------------------------------
@@ -342,11 +347,10 @@ void Game::Update(float deltaTime, float totalTime)
 	static float increment = 0.5f;
 	increment += 0.0005f;
 	
-	//scale correctly 
-	entityList[0]->GetTransform()->SetScale(1.0f, 1.0f, 1.0f); 
-	entityList[1]->GetTransform()->SetScale(0.25f, 0.25f, 0.25f);
+	// move moon
 	entityList[0]->GetTransform()->SetRotation(0.0f, increment/2, 0.0f);
 	entityList[1]->GetTransform()->SetPosition(2*sin(increment), 0.0f, 2*cos(increment));
+	exhibits[0]->PlaceObject(entityList[1], DirectX::XMFLOAT3(2 * sin(increment), 3.0f, 2 * cos(increment)));
 
 	//code that will alter fov based on user input
 	float fov = camera->GetFoV();

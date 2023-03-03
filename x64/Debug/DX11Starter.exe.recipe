@@ -2,16 +2,11 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-<<<<<<< HEAD
       <FullPath>C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\DX11Starter.exe</FullPath>
-=======
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\DX11Starter.exe</FullPath>
->>>>>>> Ashley_Experimentation
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
-<<<<<<< HEAD
       <FullPath>C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\PixelShader.cso</FullPath>
     </ContentFile>
     <ContentFile>
@@ -28,27 +23,6 @@
     </ContentFile>
     <ContentFile>
       <FullPath>C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\VertexShaderSky.cso</FullPath>
-=======
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShader.cso</FullPath>
-    </ContentFile>
-    <ContentFile>
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShaderBrightCont.cso</FullPath>
-    </ContentFile>
-    <ContentFile>
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShaderSky.cso</FullPath>
-    </ContentFile>
-    <ContentFile>
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShaderSobel.cso</FullPath>
-    </ContentFile>
-    <ContentFile>
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\VertexShader.cso</FullPath>
-    </ContentFile>
-    <ContentFile>
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\VertexShaderFull.cso</FullPath>
-    </ContentFile>
-    <ContentFile>
-      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\VertexShaderSky.cso</FullPath>
->>>>>>> Ashley_Experimentation
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />

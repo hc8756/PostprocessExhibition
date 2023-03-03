@@ -52,6 +52,24 @@ void Exhibit::AttachTo(Exhibit* other, const DirectX::XMFLOAT3& directionFromOth
 	PlaceStructures();
 }
 
+void Exhibit::CheckCollisions(Camera* camera)
+{
+	float buffer = 1.0f; // should match value in IsInWall()
+	XMFLOAT3 camPos = camera->GetTransform()->GetPosition();
+	if (posXWall != nullptr && IsInWall(camPos, posXWall)) {
+		camera->GetTransform()->SetPosition(posXWall->GetTransform()->GetPosition().x - posXWall->GetTransform()->GetScale().x / 2 - buffer, camPos.y, camPos.z);
+	}
+	if (negXWall != nullptr && IsInWall(camPos, negXWall)) {
+		camera->GetTransform()->SetPosition(negXWall->GetTransform()->GetPosition().x + negXWall->GetTransform()->GetScale().x / 2 + buffer, camPos.y, camPos.z);
+	}
+	if (posZWall != nullptr && IsInWall(camPos, posZWall)) {
+		camera->GetTransform()->SetPosition(camPos.x, camPos.y, posZWall->GetTransform()->GetPosition().z - posZWall->GetTransform()->GetScale().z / 2 - buffer);
+	}
+	if (negZWall != nullptr && IsInWall(camPos, negZWall)) {
+		camera->GetTransform()->SetPosition(camPos.x, camPos.y, negZWall->GetTransform()->GetPosition().z + negZWall->GetTransform()->GetScale().z / 2 + buffer);
+	}
+}
+
 // moves all floors and walls to the correct
 void Exhibit::PlaceStructures()
 {
@@ -64,4 +82,16 @@ void Exhibit::PlaceStructures()
 		posZWall->GetTransform()->SetPosition(origin.x, posZWall->GetTransform()->GetScale().y / 2, origin.z + size / 2);
 	if(negZWall != nullptr)
 		negZWall->GetTransform()->SetPosition(origin.x, negZWall->GetTransform()->GetScale().y / 2, origin.z - size / 2);
+}
+
+// ignores wall height
+bool Exhibit::IsInWall(XMFLOAT3 position, GameEntity* wall)
+{
+	float buffer = 1.0f;
+	XMFLOAT3 wallPos = wall->GetTransform()->GetPosition();
+	XMFLOAT3 wallScale = wall->GetTransform()->GetScale();
+	return position.x > wallPos.x - wallScale.x / 2 - buffer
+		&& position.x < wallPos.x + wallScale.x / 2 + buffer
+		&& position.z > wallPos.z - wallScale.z / 2 - buffer
+		&& position.z < wallPos.z + wallScale.z / 2 + buffer;
 }

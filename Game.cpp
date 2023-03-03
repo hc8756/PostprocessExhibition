@@ -240,7 +240,7 @@ void Game::Init()
 	entityList[0]->GetTransform()->SetScale(1.0f, 1.0f, 1.0f); // earth scale
 	entityList[1]->GetTransform()->SetScale(0.25f, 0.25f, 0.25f); // moon scale
 
-	exhibits.push_back(new Exhibit(entityList, cube, material3, DirectX::XMFLOAT3(0, 0, 0), 25, false, false, true, true));
+	exhibits.push_back(new Exhibit(entityList, cube, material3, DirectX::XMFLOAT3(0, 0, 0), 25, true, true, true, true));
 	exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
 
 }
@@ -342,6 +342,11 @@ void Game::Update(float deltaTime, float totalTime)
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::GetInstance().KeyDown(VK_ESCAPE))
 		Quit();
+
+	// allow exhibit walls to trap the camera
+	for(Exhibit* exhibit : exhibits) {
+		exhibit->CheckCollisions(camera);
+	}
 
 	//make items rotate along y axis
 	static float increment = 0.5f;

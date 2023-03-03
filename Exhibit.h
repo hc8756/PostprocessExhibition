@@ -6,10 +6,11 @@
 class Exhibit
 {
 public:
-	Exhibit(std::vector<GameEntity*>& entityList,  Mesh* cube, Material* surface, DirectX::XMFLOAT3 origin, float size, bool posXWall, bool negXWall, bool posZWall, bool negZWall);
+	Exhibit(std::vector<GameEntity*>& entityList,  Mesh* cube, Material* surface, XMFLOAT3 origin, float size, bool posXWall, bool negXWall, bool posZWall, bool negZWall);
 	//~Exhibit();
-	void PlaceObject(GameEntity* entity, const DirectX::XMFLOAT3& position);
-	void AttachTo(Exhibit* other, const DirectX::XMFLOAT3& direction);
+	void PlaceObject(GameEntity* entity, const XMFLOAT3& position);
+	void AttachTo(Exhibit* other, const XMFLOAT3& direction);
+	void CheckCollisions(Camera* camera);
 
 private:
 	DirectX::XMFLOAT3 origin;
@@ -24,4 +25,5 @@ private:
 	const float WALL_HEIGHT = 6;
 
 	void PlaceStructures();
+	bool IsInWall(XMFLOAT3 position, GameEntity* wall);
 };

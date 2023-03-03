@@ -33,6 +33,9 @@ Game::Game(HINSTANCE hInstance)
 {
 	camera = 0;
 	ambientColor= XMFLOAT3(0.2f, 0.2f, 0.2f);
+	//Set up exhibit 1 variables
+	brightness = 0.0f;
+	contrast = 1.0f;
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
 	CreateConsoleWindow(500, 120, 32, 120);
@@ -82,6 +85,9 @@ Game::~Game()
 
 	delete pixelShaderSobel;
 	pixelShaderSobel = nullptr;
+
+	delete pixelShaderBrightCont;
+	pixelShaderBrightCont = nullptr;
 
 	delete vertexShaderFull;
 	vertexShaderFull = nullptr;
@@ -261,6 +267,7 @@ void Game::LoadShaders()
 	pixelShaderSky = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderSky.cso").c_str());
 	vertexShaderFull = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShaderFull.cso").c_str());
 	pixelShaderSobel = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderSobel.cso").c_str());
+	pixelShaderBrightCont = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderBrightCont.cso").c_str());
 }
 
 void Game::CreateBasicGeometry()
@@ -401,7 +408,9 @@ void Game::Draw(float deltaTime, float totalTime)
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 	//Create ImGui Test Window
-	ImGui::Begin("Test");
+	ImGui::Begin("Control Panel");
+	ImGui::DragFloat(": brightness",&brightness,0.01f,-1.0f,1.0f);
+	ImGui::DragFloat(": contrast", &contrast, 0.01f, 0.0f, 10.0f);
 	ImGui::End();
 	//Assemble Together Draw Data
 	ImGui::Render();
@@ -449,7 +458,16 @@ void Game::PostRender()
 	pixelShaderSobel->SetSamplerState("samplerOptions", clampSampler.Get());
 	pixelShaderSobel->SetFloat("pixelWidth", 1.0f / width);
 	pixelShaderSobel->SetFloat("pixelHeight", 1.0f / height);
-	//pixelShaderSobel->CopyAllBufferData();
+	pixelShaderBrightCont->SetFloat("brightness", brightness);
+	pixelShaderBrightCont->SetFloat("contrast", contrast);
+
+
+	pixelShaderBrightCont->SetShader();
+	pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
+	pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
+	pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
+	pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
+	pixelShaderBrightCont->CopyAllBufferData();
 
 	// Draw 3 vertices
 	context->Draw(3, 0);

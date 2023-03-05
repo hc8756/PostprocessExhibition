@@ -1,6 +1,2 @@
-﻿  compilation object save succeeded; see C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\PixelShaderBrightCont.cso
-  Game.cpp
-  Main.cpp
-  Generating Code...
-  LINK : C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\DX11Starter.exe not found or not built by the last incremental link; performing full link
+﻿  compilation object save succeeded; see C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\PixelShaderBlur.cso
   DX11Starter.vcxproj -> C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\DX11Starter.exe

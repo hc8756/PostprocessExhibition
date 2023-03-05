@@ -36,6 +36,8 @@ Game::Game(HINSTANCE hInstance)
 	//Set up exhibit 1 variables
 	brightness = 0.0f;
 	contrast = 1.0f;
+
+	blur = 1;
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
 	CreateConsoleWindow(500, 120, 32, 120);
@@ -88,6 +90,9 @@ Game::~Game()
 
 	delete pixelShaderBrightCont;
 	pixelShaderBrightCont = nullptr;
+
+	delete pixelShaderBlur;
+	pixelShaderBlur = nullptr;
 
 	delete vertexShaderFull;
 	vertexShaderFull = nullptr;
@@ -268,6 +273,7 @@ void Game::LoadShaders()
 	vertexShaderFull = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShaderFull.cso").c_str());
 	pixelShaderSobel = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderSobel.cso").c_str());
 	pixelShaderBrightCont = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderBrightCont.cso").c_str());
+	pixelShaderBlur = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderBlur.cso").c_str());
 }
 
 void Game::CreateBasicGeometry()
@@ -461,13 +467,21 @@ void Game::PostRender()
 	pixelShaderBrightCont->SetFloat("brightness", brightness);
 	pixelShaderBrightCont->SetFloat("contrast", contrast);
 
-
+	
 	pixelShaderBrightCont->SetShader();
 	pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
 	pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
 	pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
 	pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
 	pixelShaderBrightCont->CopyAllBufferData();
+
+	pixelShaderBlur->SetShader();
+	pixelShaderBlur->SetShaderResourceView("image", ppSRV.Get());
+	pixelShaderBlur->SetSamplerState("samplerOptions", clampSampler.Get());
+	pixelShaderBlur->SetInt("blur", blur);
+	pixelShaderBlur->SetFloat("pixelWidth", 1.0f / width);
+	pixelShaderBlur->SetFloat("pixelHeight", 1.0f / height);
+	pixelShaderBlur->CopyAllBufferData();
 
 	// Draw 3 vertices
 	context->Draw(3, 0);

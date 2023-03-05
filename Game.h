@@ -61,6 +61,10 @@ private:
 	float brightness;
 	float contrast;
 
+	//Exhibit 2
+	SimplePixelShader* pixelShaderBlur; //shader that effects blur in post processing
+	int blur; // number of pixels to average outward from the current pixel
+
 	//my models
 	Mesh* cube;
 	Mesh* sphere;

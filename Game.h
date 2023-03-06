@@ -64,6 +64,7 @@ private:
 	//Exhibit 2
 	SimplePixelShader* pixelShaderBlur; //shader that effects blur in post processing
 	int blur; // number of pixels to average outward from the current pixel
+	bool useBlur; // temp for milestone 1 demo
 
 	//my models
 	Mesh* cube;

@@ -20,23 +20,12 @@ SamplerState samplerOptions	: register(s0);
 float4 main(VertexToPixel input) : SV_TARGET
 {
 	float3 colorTotal = float3(0, 0, 0);
-	int blurTest = 3;
-	for (int x = -blurTest; x <= blurTest; x++) {
-		for (int y = -blurTest; y <= blurTest; y++) {
-			colorTotal += image.Sample(samplerOptions, input.uv + float2(x * pixelWidth, y * pixelHeight)).rgb;
-			//colorTotal += image.Load(int3(input.position.x + x, input.position.y + y, 0));
+	for (int x = -blur; x <= blur; x++) {
+		for (int y = -blur; y <= blur; y++) {
+			colorTotal += image.Load(int3(input.position.x + x, input.position.y + y, 0));
 		}
 	}
-	int pixelCount = (2 * blurTest + 1) * (2 * blurTest + 1);
-
-	/*int sideLength = 2 * blur + 1;
-	int pixelCount = sideLength * sideLength;
-	for (int i = 0; i < pixelCount; i++) {
-		int x = -blur + i % sideLength;
-		int y = -blur + i / sideLength;
-		colorTotal += image.Sample(samplerOptions, input.uv + float2(x * pixelWidth, y * pixelHeight)).rgb;
-	}*/
 	
+	int pixelCount = (2 * blur + 1) * (2 * blur + 1);
 	return float4(colorTotal, 1) / pixelCount;
-	//return float4(blur, blur, blur, 1);
 }

@@ -37,7 +37,7 @@ Game::Game(HINSTANCE hInstance)
 	brightness = 0.0f;
 	contrast = 1.0f;
 
-	blur = 1;
+	blur = 0;
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
 	CreateConsoleWindow(500, 120, 32, 120);
@@ -361,6 +361,11 @@ void Game::Update(float deltaTime, float totalTime)
 		exhibit->CheckCollisions(camera);
 	}
 
+	// temp for milestone 1 demo
+	if (Input::GetInstance().KeyPress('B')) {
+		useBlur = !useBlur;
+	}
+
 	//make items rotate along y axis
 	static float increment = 0.5f;
 	increment += 0.0005f;
@@ -371,7 +376,7 @@ void Game::Update(float deltaTime, float totalTime)
 	exhibits[0]->PlaceObject(entityList[1], DirectX::XMFLOAT3(2 * sin(increment), 3.0f, 2 * cos(increment)));
 
 	//code that will alter fov based on user input
-	float fov = camera->GetFoV();
+	/*float fov = camera->GetFoV();
 	if (Input::GetInstance().KeyDown('P')) {
 		fov += 1 * deltaTime;
 		camera->SetFoV(fov);
@@ -379,7 +384,7 @@ void Game::Update(float deltaTime, float totalTime)
 	if (Input::GetInstance().KeyDown('O')) {
 		fov -= 1 * deltaTime;
 		camera->SetFoV(fov);
-	}
+	}*/
 
 	if (Input::GetInstance().KeyPress('R')) {
 		firstPerson = !firstPerson;
@@ -417,6 +422,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	ImGui::Begin("Control Panel");
 	ImGui::DragFloat(": brightness",&brightness,0.01f,-1.0f,1.0f);
 	ImGui::DragFloat(": contrast", &contrast, 0.01f, 0.0f, 10.0f);
+	ImGui::DragInt(": blur", &blur, 0, 0, 50.0f);
 	ImGui::End();
 	//Assemble Together Draw Data
 	ImGui::Render();
@@ -475,13 +481,15 @@ void Game::PostRender()
 	pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
 	pixelShaderBrightCont->CopyAllBufferData();
 
-	pixelShaderBlur->SetShader();
-	pixelShaderBlur->SetShaderResourceView("image", ppSRV.Get());
-	pixelShaderBlur->SetSamplerState("samplerOptions", clampSampler.Get());
-	pixelShaderBlur->SetInt("blur", blur);
-	pixelShaderBlur->SetFloat("pixelWidth", 1.0f / width);
-	pixelShaderBlur->SetFloat("pixelHeight", 1.0f / height);
-	pixelShaderBlur->CopyAllBufferData();
+	if (useBlur) {
+		pixelShaderBlur->SetShader();
+		pixelShaderBlur->SetShaderResourceView("image", ppSRV.Get());
+		pixelShaderBlur->SetSamplerState("samplerOptions", clampSampler.Get());
+		pixelShaderBlur->SetInt("blur", blur);
+		pixelShaderBlur->SetFloat("pixelWidth", 1.0f / width);
+		pixelShaderBlur->SetFloat("pixelHeight", 1.0f / height);
+		pixelShaderBlur->CopyAllBufferData();
+	}
 
 	// Draw 3 vertices
 	context->Draw(3, 0);

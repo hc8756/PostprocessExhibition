@@ -1,10 +1,10 @@
 #include "Exhibit.h"
 
-// origin: the top-middle of the floor, size: the width and height of the square
-Exhibit::Exhibit(std::vector<GameEntity*>& entityList, Mesh* cube, Material* surface, DirectX::XMFLOAT3 origin, float size, bool posXWall, bool negXWall, bool posZWall, bool negZWall)
+// the position defaults to (0, 0, 0), use AttachTo() to place on relative to another
+Exhibit::Exhibit(std::vector<GameEntity*>& entityList, Mesh* cube, Material* surface, float size, bool posXWall, bool negXWall, bool posZWall, bool negZWall)
 {
 	origin.y = 0;
-	this->origin = origin;
+	this->origin = XMFLOAT3(0, 0, 0);
 	this->size = size;
 
 	// create floor
@@ -68,6 +68,14 @@ void Exhibit::CheckCollisions(Camera* camera)
 	if (negZWall != nullptr && IsInWall(camPos, negZWall)) {
 		camera->GetTransform()->SetPosition(camPos.x, camPos.y, negZWall->GetTransform()->GetPosition().z + negZWall->GetTransform()->GetScale().z / 2 + buffer);
 	}
+}
+
+bool Exhibit::IsInExhibit(const XMFLOAT3& position)
+{
+	return position.x > origin.x - size / 2
+		&& position.x < origin.x + size / 2
+		&& position.z > origin.z - size / 2
+		&& position.z < origin.z + size / 2;
 }
 
 // moves all floors and walls to the correct

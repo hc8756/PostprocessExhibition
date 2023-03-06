@@ -43,8 +43,6 @@ void Camera::Update(float dt)
 	}
 
 	// Calculate how much the cursor changed
-	if (input.KeyPress('1')) { mouseLookSpeed -= 0.01f; }
-	if (input.KeyPress('2')) { mouseLookSpeed += 0.01f; }
 	float xDiff = dt * mouseLookSpeed * input.GetMouseXDelta();
 	float yDiff = dt * mouseLookSpeed * input.GetMouseYDelta();
 

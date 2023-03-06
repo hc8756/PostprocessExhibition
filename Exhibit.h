@@ -6,15 +6,18 @@
 class Exhibit
 {
 public:
-	Exhibit(std::vector<GameEntity*>& entityList,  Mesh* cube, Material* surface, XMFLOAT3 origin, float size, bool posXWall, bool negXWall, bool posZWall, bool negZWall);
+	Exhibit(std::vector<GameEntity*>& entityList,  Mesh* cube, Material* surface, float size, bool posXWall, bool negXWall, bool posZWall, bool negZWall);
 	//~Exhibit();
 	void PlaceObject(GameEntity* entity, const XMFLOAT3& position);
 	void AttachTo(Exhibit* other, const XMFLOAT3& direction);
 	void CheckCollisions(Camera* camera);
+	bool IsInExhibit(const XMFLOAT3& position);
 
 private:
 	DirectX::XMFLOAT3 origin;
 	float size;
+
+	// these game objects are owned by Game.cpp
 	GameEntity* floor;
 	GameEntity* posXWall;
 	GameEntity* negXWall;

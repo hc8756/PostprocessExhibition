@@ -56,6 +56,8 @@ private:
 	SimplePixelShader* pixelShaderSobel;
 	SimpleVertexShader* vertexShaderFull;
 
+	int exhibitIndex;
+
 	//Exhibit 1
 	SimplePixelShader* pixelShaderBrightCont;//shader that effects brightness and contrast in post processing
 	float brightness;
@@ -64,7 +66,6 @@ private:
 	//Exhibit 2
 	SimplePixelShader* pixelShaderBlur; //shader that effects blur in post processing
 	int blur; // number of pixels to average outward from the current pixel
-	bool useBlur; // temp for milestone 1 demo
 
 	//my models
 	Mesh* cube;

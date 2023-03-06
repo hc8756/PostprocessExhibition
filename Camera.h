@@ -9,6 +9,8 @@ public:
 	Camera(float x, float y, float z, float moveSpeed, float lookSpeed, float fov, float aspectRatio);
 	~Camera();
 
+	float mouseLookSpeed;
+
 	// Update methods
 	void Update(float dt);
 	void UpdateViewMatrix();
@@ -27,7 +29,6 @@ private:
 
 	Transform transform;
 	float movementSpeed;
-	float mouseLookSpeed;
 	float fieldOfView;
 	float aspectRatio;
 };

@@ -33,7 +33,8 @@ Game::Game(HINSTANCE hInstance)
 {
 	camera = 0;
 	ambientColor= XMFLOAT3(0.2f, 0.2f, 0.2f);
-	//Set up exhibit 1 variables
+	//Set up exhibit variables
+	exhibitIndex = 0;
 	brightness = 0.0f;
 	contrast = 1.0f;
 
@@ -229,7 +230,7 @@ void Game::Init()
 
 
 	//create camera 
-	camera = new Camera(0, 0, -10, 5.0f, 0.2f, XM_PIDIV4, (float)width / height);
+	camera = new Camera(0, 0, -10, 10.0f, 0.2f, XM_PIDIV4, (float)width / height);
 
 	//default normal and uv values
 	defNormal = XMFLOAT3(+0.0f, +0.0f, -1.0f);
@@ -251,8 +252,11 @@ void Game::Init()
 	entityList[0]->GetTransform()->SetScale(1.0f, 1.0f, 1.0f); // earth scale
 	entityList[1]->GetTransform()->SetScale(0.25f, 0.25f, 0.25f); // moon scale
 
-	exhibits.push_back(new Exhibit(entityList, cube, material3, DirectX::XMFLOAT3(0, 0, 0), 25, true, true, true, true));
+	exhibits.push_back(new Exhibit(entityList, cube, material3, 25, false, true, true, true));
 	exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
+
+	exhibits.push_back(new Exhibit(entityList, cube, material3, 25, true, false, true, true));
+	exhibits[1]->AttachTo(exhibits[0], XMFLOAT3(1, 0, 0));
 
 }
 
@@ -361,9 +365,16 @@ void Game::Update(float deltaTime, float totalTime)
 		exhibit->CheckCollisions(camera);
 	}
 
-	// temp for milestone 1 demo
-	if (Input::GetInstance().KeyPress('B')) {
-		useBlur = !useBlur;
+	// check for change in exhibit
+	for (int i = 0; i < exhibits.size(); i++) {
+		if (i == exhibitIndex) {
+			continue;
+		}
+
+		if (exhibits[i]->IsInExhibit(camera->GetTransform()->GetPosition())) {
+			exhibitIndex = i;
+			break;
+		}
 	}
 
 	//make items rotate along y axis
@@ -418,11 +429,17 @@ void Game::Draw(float deltaTime, float totalTime)
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-	//Create ImGui Test Window
+	//Create ImGui Window
 	ImGui::Begin("Control Panel");
-	ImGui::DragFloat(": brightness",&brightness,0.01f,-1.0f,1.0f);
-	ImGui::DragFloat(": contrast", &contrast, 0.01f, 0.0f, 10.0f);
-	ImGui::DragInt(": blur", &blur, 0, 0, 50.0f);
+	ImGui::DragFloat(": sensitivity", &camera->mouseLookSpeed, 0.01f, 0.1f, 10.0f);
+
+	if (exhibitIndex == 0) {
+		ImGui::DragFloat(": brightness", &brightness, 0.01f, -1.0f, 1.0f);
+		ImGui::DragFloat(": contrast", &contrast, 0.01f, 0.0f, 10.0f);
+	}
+	else if (exhibitIndex == 1) {
+		ImGui::DragInt(": blur", &blur, 1, 0, 50);
+	}
 	ImGui::End();
 	//Assemble Together Draw Data
 	ImGui::Render();
@@ -473,15 +490,15 @@ void Game::PostRender()
 	pixelShaderBrightCont->SetFloat("brightness", brightness);
 	pixelShaderBrightCont->SetFloat("contrast", contrast);
 
-	
-	pixelShaderBrightCont->SetShader();
-	pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
-	pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
-	pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
-	pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
-	pixelShaderBrightCont->CopyAllBufferData();
-
-	if (useBlur) {
+	if (exhibitIndex == 0) {
+		pixelShaderBrightCont->SetShader();
+		pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
+		pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
+		pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
+		pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
+		pixelShaderBrightCont->CopyAllBufferData();
+	}
+	else if (exhibitIndex == 1) {
 		pixelShaderBlur->SetShader();
 		pixelShaderBlur->SetShaderResourceView("image", ppSRV.Get());
 		pixelShaderBlur->SetSamplerState("samplerOptions", clampSampler.Get());

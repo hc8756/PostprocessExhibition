@@ -1,3 +1,2 @@
 ﻿  Game.cpp
-D:\Profiles\ejb3432\Documents\GitHub\750project\Game.cpp(425,40): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
   DX11Starter.vcxproj -> D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\DX11Starter.exe

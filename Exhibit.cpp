@@ -1,10 +1,11 @@
 #include "Exhibit.h"
 
+std::vector<GameEntity*>* Exhibit::mainEntityList;
 Mesh* Exhibit::cube;
 Material* Exhibit::cobblestone;
 
 // the position defaults to (0, 0, 0), use AttachTo() to place on relative to another
-Exhibit::Exhibit(std::vector<GameEntity*>& entityList, float size, bool posXWall, bool negXWall, bool posZWall, bool negZWall)
+Exhibit::Exhibit(float size)
 {
 	origin.y = 0;
 	this->origin = XMFLOAT3(0, 0, 0);
@@ -12,30 +13,22 @@ Exhibit::Exhibit(std::vector<GameEntity*>& entityList, float size, bool posXWall
 
 	// create floor
 	floor = new GameEntity(cube, cobblestone);
-	entityList.push_back(floor); // use Game.cpp entity list so that it draws and deletes automatically
+	mainEntityList->push_back(floor); // use Game.cpp entity list so that it draws and deletes automatically
 	floor->GetTransform()->SetScale(size, THICKNESS, size);
 
-	// create walls
-	if (posXWall) {
-		this->posXWall = new GameEntity(cube, cobblestone);
-		entityList.push_back(this->posXWall);
-		this->posXWall->GetTransform()->SetScale(THICKNESS, WALL_HEIGHT, size);
-	}
-	if (negXWall) {
-		this->negXWall = new GameEntity(cube, cobblestone);
-		entityList.push_back(this->negXWall);
-		this->negXWall->GetTransform()->SetScale(THICKNESS, WALL_HEIGHT, size);
-	}
-	if (posZWall) {
-		this->posZWall = new GameEntity(cube, cobblestone);
-		entityList.push_back(this->posZWall);
-		this->posZWall->GetTransform()->SetScale(size, WALL_HEIGHT, THICKNESS);
-	}
-	if (negZWall) {
-		this->negZWall = new GameEntity(cube, cobblestone);
-		entityList.push_back(this->negZWall);
-		this->negZWall->GetTransform()->SetScale(size, WALL_HEIGHT, THICKNESS);
-	}
+	// create all 4 walls by defualt, then remove them when attached to another exhibit
+	this->posXWall = new GameEntity(cube, cobblestone);
+	mainEntityList->push_back(this->posXWall);
+	this->posXWall->GetTransform()->SetScale(THICKNESS, WALL_HEIGHT, size);
+	this->negXWall = new GameEntity(cube, cobblestone);
+	mainEntityList->push_back(this->negXWall);
+	this->negXWall->GetTransform()->SetScale(THICKNESS, WALL_HEIGHT, size);
+	this->posZWall = new GameEntity(cube, cobblestone);
+	mainEntityList->push_back(this->posZWall);
+	this->posZWall->GetTransform()->SetScale(size, WALL_HEIGHT, THICKNESS);
+	this->negZWall = new GameEntity(cube, cobblestone);
+	mainEntityList->push_back(this->negZWall);
+	this->negZWall->GetTransform()->SetScale(size, WALL_HEIGHT, THICKNESS);
 
 	PlaceStructures();
 }
@@ -47,11 +40,30 @@ void Exhibit::PlaceObject(GameEntity* entity, const DirectX::XMFLOAT3& position)
 }
 
 // places this exhibit up against another one in the desired direction. This does not move objects already within the exhibit
-// the direction should be a unit vector, and most likely should have 0 as the y value
-void Exhibit::AttachTo(Exhibit* other, const DirectX::XMFLOAT3& directionFromOther)
+void Exhibit::AttachTo(Exhibit* other, Direction direction)
 {
+	XMFLOAT2 shiftDir = XMFLOAT2();
+	switch (direction) {
+		case POSX:
+			shiftDir = XMFLOAT2(1, 0);
+			//mainEntityList.remove();
+			negXWall = nullptr;
+			other->posXWall = nullptr;
+			// need to delete wall
+			break;
+		case NEGX:
+			shiftDir = XMFLOAT2(-1, 0);
+			break;
+		case POSZ:
+			shiftDir = XMFLOAT2(0, 1);
+			break;
+		case NEGZ:
+			shiftDir = XMFLOAT2(0, -1);
+			break;
+	}
+
 	float scale = (size + other->size) / 2;
-	origin = DirectX::XMFLOAT3(other->origin.x + directionFromOther.x * scale, other->origin.y + directionFromOther.y * scale, other->origin.z + directionFromOther.z * scale);
+	origin = XMFLOAT3(other->origin.x + shiftDir.x * scale, 0, other->origin.z + shiftDir.y * scale);
 	PlaceStructures();
 }
 

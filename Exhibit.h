@@ -2,18 +2,26 @@
 #include <DirectXMath.h>
 #include "GameEntity.h"
 
+enum Direction {
+	POSX,
+	NEGX,
+	POSZ,
+	NEGZ
+};
+
 // a square room that with entities inside of it
 class Exhibit
 {
 public:
+	static std::vector<GameEntity*>* mainEntityList; // pointer the main entity list in Game.ccp so that walls are cleaned up automatically
 	static Mesh* cube;
 	static Material* cobblestone;
 
 public:
-	Exhibit(std::vector<GameEntity*>& entityList, float size, bool posXWall, bool negXWall, bool posZWall, bool negZWall);
+	Exhibit(float size);
 	//~Exhibit();
 	void PlaceObject(GameEntity* entity, const XMFLOAT3& position);
-	void AttachTo(Exhibit* other, const XMFLOAT3& direction);
+	void AttachTo(Exhibit* other, Direction direction);
 	void CheckCollisions(Camera* camera);
 	bool IsInExhibit(const XMFLOAT3& position);
 

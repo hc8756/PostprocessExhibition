@@ -249,17 +249,18 @@ void Game::Init()
 	Input::GetInstance().SwapMouseVisible();
 
 	// set up exhibits
+	Exhibit::mainEntityList = &entityList;
 	Exhibit::cube = cube;
 	Exhibit::cobblestone = material3;
 
 	entityList[0]->GetTransform()->SetScale(1.0f, 1.0f, 1.0f); // earth scale
 	entityList[1]->GetTransform()->SetScale(0.25f, 0.25f, 0.25f); // moon scale
 
-	exhibits.push_back(new Exhibit(entityList, 25, false, true, true, true));
+	exhibits.push_back(new Exhibit(25));
 	exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
 
-	exhibits.push_back(new Exhibit(entityList, 25, true, false, true, true));
-	exhibits[1]->AttachTo(exhibits[0], XMFLOAT3(1, 0, 0));
+	exhibits.push_back(new Exhibit(25));
+	exhibits[1]->AttachTo(exhibits[0], POSX);
 
 }
 

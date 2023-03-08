@@ -6,7 +6,11 @@
 class Exhibit
 {
 public:
-	Exhibit(std::vector<GameEntity*>& entityList,  Mesh* cube, Material* surface, float size, bool posXWall, bool negXWall, bool posZWall, bool negZWall);
+	static Mesh* cube;
+	static Material* cobblestone;
+
+public:
+	Exhibit(std::vector<GameEntity*>& entityList, float size, bool posXWall, bool negXWall, bool posZWall, bool negZWall);
 	//~Exhibit();
 	void PlaceObject(GameEntity* entity, const XMFLOAT3& position);
 	void AttachTo(Exhibit* other, const XMFLOAT3& direction);

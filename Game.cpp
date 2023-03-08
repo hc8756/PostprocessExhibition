@@ -249,13 +249,16 @@ void Game::Init()
 	Input::GetInstance().SwapMouseVisible();
 
 	// set up exhibits
+	Exhibit::cube = cube;
+	Exhibit::cobblestone = material3;
+
 	entityList[0]->GetTransform()->SetScale(1.0f, 1.0f, 1.0f); // earth scale
 	entityList[1]->GetTransform()->SetScale(0.25f, 0.25f, 0.25f); // moon scale
 
-	exhibits.push_back(new Exhibit(entityList, cube, material3, 25, false, true, true, true));
+	exhibits.push_back(new Exhibit(entityList, 25, false, true, true, true));
 	exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
 
-	exhibits.push_back(new Exhibit(entityList, cube, material3, 25, true, false, true, true));
+	exhibits.push_back(new Exhibit(entityList, 25, true, false, true, true));
 	exhibits[1]->AttachTo(exhibits[0], XMFLOAT3(1, 0, 0));
 
 }
@@ -397,7 +400,7 @@ void Game::Update(float deltaTime, float totalTime)
 		camera->SetFoV(fov);
 	}*/
 
-	if (Input::GetInstance().KeyPress('R')) {
+	if (Input::GetInstance().KeyPress('E')) {
 		firstPerson = !firstPerson;
 		Input::GetInstance().SwapMouseVisible();
 	}
@@ -431,7 +434,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	ImGui::NewFrame();
 	//Create ImGui Window
 	ImGui::Begin("Control Panel");
-	ImGui::DragFloat(": sensitivity", &camera->mouseLookSpeed, 0.01f, 0.1f, 10.0f);
+	ImGui::DragFloat(": sensitivity", &camera->mouseLookSpeed, 0.01f, 0.01f, 10.0f);
 
 	if (exhibitIndex == 0) {
 		ImGui::DragFloat(": brightness", &brightness, 0.01f, -1.0f, 1.0f);

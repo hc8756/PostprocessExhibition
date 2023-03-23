@@ -60,6 +60,11 @@ Game::~Game()
 		en = nullptr;
 	}
 
+	for (auto& ex : exhibits) {
+		delete ex;
+		ex = nullptr;
+	}
+
 	for (auto& mat : materialList) {
 		delete mat;
 		mat = nullptr;
@@ -249,7 +254,7 @@ void Game::Init()
 	Input::GetInstance().SwapMouseVisible();
 
 	// set up exhibits
-	Exhibit::mainEntityList = &entityList;
+	//Exhibit::mainEntityList = &entityList;
 	Exhibit::cube = cube;
 	Exhibit::cobblestone = material3;
 
@@ -417,13 +422,24 @@ void Game::Draw(float deltaTime, float totalTime)
 {
 	PreRender();
 
-	//call game entity drawing method for each entitiy
+	//call game entity drawing method for each entity
 	//also set up lighting stuff
 	for (int i = 0; i < entityList.size(); i++) {
 		entityList[i]->GetMaterial()->GetPixelShader()->SetFloat3("ambientColor",ambientColor);
 		entityList[i]->GetMaterial()->GetPixelShader()->SetData("lights", &lightList[0], sizeof(Light) * (int)lightList.size());
 		entityList[i]->Draw(context,camera);
 	}
+
+	// draw all exhibits
+	for (Exhibit* exhibit : exhibits) {
+		const std::vector<GameEntity*>* surfaces = exhibit->GetEntities();
+		for (GameEntity* surface : *surfaces) {
+			surface->GetMaterial()->GetPixelShader()->SetFloat3("ambientColor", ambientColor);
+			surface->GetMaterial()->GetPixelShader()->SetData("lights", &lightList[0], sizeof(Light) * (int)lightList.size());
+			surface->Draw(context, camera);
+		}
+	}
+
 	//draw sky
 	sky->Draw(context, camera);
 	PostRender();

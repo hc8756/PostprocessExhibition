@@ -1,36 +1,58 @@
 #include "Exhibit.h"
 
-std::vector<GameEntity*>* Exhibit::mainEntityList;
+//std::vector<GameEntity*>* Exhibit::mainEntityList;
 Mesh* Exhibit::cube;
 Material* Exhibit::cobblestone;
 
-// the position defaults to (0, 0, 0), use AttachTo() to place on relative to another
+// the position defaults to (0, 0, 0), use AttachTo() to place one relative to another
 Exhibit::Exhibit(float size)
 {
 	origin.y = 0;
 	this->origin = XMFLOAT3(0, 0, 0);
 	this->size = size;
 
+	surfaces = new std::vector<GameEntity*>();
+
 	// create floor
-	floor = new GameEntity(cube, cobblestone);
-	mainEntityList->push_back(floor); // use Game.cpp entity list so that it draws and deletes automatically
+	GameEntity* floor = new GameEntity(cube, cobblestone);
+	//mainEntityList->push_back(floor); // use Game.cpp entity list so that it draws and deletes automatically
 	floor->GetTransform()->SetScale(size, THICKNESS, size);
+	surfaces->push_back(floor); // floor must be first in the list
 
 	// create all 4 walls by defualt, then remove them when attached to another exhibit
-	this->posXWall = new GameEntity(cube, cobblestone);
-	mainEntityList->push_back(this->posXWall);
-	this->posXWall->GetTransform()->SetScale(THICKNESS, WALL_HEIGHT, size);
-	this->negXWall = new GameEntity(cube, cobblestone);
-	mainEntityList->push_back(this->negXWall);
-	this->negXWall->GetTransform()->SetScale(THICKNESS, WALL_HEIGHT, size);
-	this->posZWall = new GameEntity(cube, cobblestone);
-	mainEntityList->push_back(this->posZWall);
-	this->posZWall->GetTransform()->SetScale(size, WALL_HEIGHT, THICKNESS);
-	this->negZWall = new GameEntity(cube, cobblestone);
-	mainEntityList->push_back(this->negZWall);
-	this->negZWall->GetTransform()->SetScale(size, WALL_HEIGHT, THICKNESS);
+	GameEntity* posXWall = new GameEntity(cube, cobblestone);
+	posXWall->GetTransform()->SetScale(THICKNESS, WALL_HEIGHT, size);
+	posXWall->GetTransform()->SetPosition(origin.x + size / 2, posXWall->GetTransform()->GetScale().y / 2, origin.z);
+	surfaces->push_back(posXWall);
 
-	PlaceStructures();
+	GameEntity* negXWall = new GameEntity(cube, cobblestone);
+	negXWall->GetTransform()->SetScale(THICKNESS, WALL_HEIGHT, size);
+	negXWall->GetTransform()->SetPosition(origin.x - size / 2, negXWall->GetTransform()->GetScale().y / 2, origin.z);
+	surfaces->push_back(negXWall);
+
+	GameEntity* posZWall = new GameEntity(cube, cobblestone);	
+	posZWall->GetTransform()->SetScale(size, WALL_HEIGHT, THICKNESS);
+	posZWall->GetTransform()->SetPosition(origin.x, posZWall->GetTransform()->GetScale().y / 2, origin.z + size / 2);
+	surfaces->push_back(posZWall);
+
+	GameEntity* negZWall = new GameEntity(cube, cobblestone);
+	negZWall->GetTransform()->SetScale(size, WALL_HEIGHT, THICKNESS);
+	negZWall->GetTransform()->SetPosition(origin.x, negZWall->GetTransform()->GetScale().y / 2, origin.z - size / 2);
+	surfaces->push_back(negZWall);
+}
+
+Exhibit::~Exhibit()
+{
+	for (auto& surface : *surfaces) {
+		delete surface;
+		surface = nullptr;
+	}
+}
+
+// allows Game.cpp to draw the entities here
+const std::vector<GameEntity*>* Exhibit::GetEntities()
+{
+	return surfaces;
 }
 
 // places the entity relative to the origin of this room for convenience
@@ -46,10 +68,6 @@ void Exhibit::AttachTo(Exhibit* other, Direction direction)
 	switch (direction) {
 		case POSX:
 			shiftDir = XMFLOAT2(1, 0);
-			//mainEntityList.remove();
-			negXWall = nullptr;
-			other->posXWall = nullptr;
-			// need to delete wall
 			break;
 		case NEGX:
 			shiftDir = XMFLOAT2(-1, 0);
@@ -63,15 +81,27 @@ void Exhibit::AttachTo(Exhibit* other, Direction direction)
 	}
 
 	float scale = (size + other->size) / 2;
+	XMFLOAT3 oldOrigin = origin;
 	origin = XMFLOAT3(other->origin.x + shiftDir.x * scale, 0, other->origin.z + shiftDir.y * scale);
-	PlaceStructures();
+
+	// shift walls and floors
+	XMFLOAT3 shift = XMFLOAT3(origin.x - oldOrigin.x, 0, origin.z - oldOrigin.z);
+	for (GameEntity* surface : *surfaces) {
+		surface->GetTransform()->MoveAbsolute(shift.x, 0, shift.z);
+	}
+
+	// replace full walls with doorway
+
 }
 
 void Exhibit::CheckCollisions(Camera* camera)
 {
-	float buffer = 1.0f; // should match value in IsInWall()
+	if (surfaces->size() < 1) {
+		return;
+	}
+
 	XMFLOAT3 camPos = camera->GetTransform()->GetPosition();
-	if (posXWall != nullptr && IsInWall(camPos, posXWall)) {
+	/*if (posXWall != nullptr && IsInWall(camPos, posXWall)) {
 		camera->GetTransform()->SetPosition(posXWall->GetTransform()->GetPosition().x - posXWall->GetTransform()->GetScale().x / 2 - buffer, camPos.y, camPos.z);
 	}
 	if (negXWall != nullptr && IsInWall(camPos, negXWall)) {
@@ -82,6 +112,37 @@ void Exhibit::CheckCollisions(Camera* camera)
 	}
 	if (negZWall != nullptr && IsInWall(camPos, negZWall)) {
 		camera->GetTransform()->SetPosition(camPos.x, camPos.y, negZWall->GetTransform()->GetPosition().z + negZWall->GetTransform()->GetScale().z / 2 + buffer);
+	}*/
+
+	int extraWidth = 1; // added distance from the wall for the collision
+	for (int i = 1; i < surfaces->size(); i++) { // skip the first element because that is the floor
+		GameEntity* wall = (*surfaces)[i];
+
+		// check if inside the wall or not
+		XMFLOAT3 wallPos = wall->GetTransform()->GetPosition();
+		XMFLOAT3 wallScale = wall->GetTransform()->GetScale();
+
+		if (camPos.x < wallPos.x - wallScale.x / 2 - extraWidth
+			|| camPos.x > wallPos.x + wallScale.x / 2 + extraWidth
+			|| camPos.z < wallPos.z - wallScale.z / 2 - extraWidth
+			|| camPos.z > wallPos.z + wallScale.z / 2 + extraWidth
+		) {
+			continue; // outside the wall
+		}
+
+		// shift away from wall. Assumes camera moves slow enough to never actually make it inside the wall
+		if (camPos.x < wallPos.x - wallScale.x / 2) {
+			camera->GetTransform()->SetPosition(wallPos.x - wallScale.x / 2 - extraWidth, camPos.y, camPos.z);
+		}
+		else if (camPos.x > wallPos.x + wallScale.x / 2) {
+			camera->GetTransform()->SetPosition(wallPos.x + wallScale.x / 2 + extraWidth, camPos.y, camPos.z);
+		}
+		else if (camPos.z < wallPos.z - wallScale.z / 2) {
+			camera->GetTransform()->SetPosition(camPos.x, camPos.y, wallPos.z - wallScale.z / 2 - extraWidth);
+		}
+		else if (camPos.z > wallPos.z + wallScale.z / 2) {
+			camera->GetTransform()->SetPosition(camPos.x, camPos.y, wallPos.z + wallScale.z / 2 + extraWidth);
+		}
 	}
 }
 
@@ -91,30 +152,4 @@ bool Exhibit::IsInExhibit(const XMFLOAT3& position)
 		&& position.x < origin.x + size / 2
 		&& position.z > origin.z - size / 2
 		&& position.z < origin.z + size / 2;
-}
-
-// moves all floors and walls to the correct
-void Exhibit::PlaceStructures()
-{
-	floor->GetTransform()->SetPosition(origin.x, -floor->GetTransform()->GetScale().y / 2, origin.z); // top is at y = 0
-	if(posXWall != nullptr)
-		posXWall->GetTransform()->SetPosition(origin.x + size / 2, posXWall->GetTransform()->GetScale().y / 2, origin.z);
-	if(negXWall != nullptr)
-		negXWall->GetTransform()->SetPosition(origin.x - size / 2, negXWall->GetTransform()->GetScale().y / 2, origin.z);
-	if(posZWall != nullptr)
-		posZWall->GetTransform()->SetPosition(origin.x, posZWall->GetTransform()->GetScale().y / 2, origin.z + size / 2);
-	if(negZWall != nullptr)
-		negZWall->GetTransform()->SetPosition(origin.x, negZWall->GetTransform()->GetScale().y / 2, origin.z - size / 2);
-}
-
-// ignores wall height
-bool Exhibit::IsInWall(XMFLOAT3 position, GameEntity* wall)
-{
-	float buffer = 1.0f;
-	XMFLOAT3 wallPos = wall->GetTransform()->GetPosition();
-	XMFLOAT3 wallScale = wall->GetTransform()->GetScale();
-	return position.x > wallPos.x - wallScale.x / 2 - buffer
-		&& position.x < wallPos.x + wallScale.x / 2 + buffer
-		&& position.z > wallPos.z - wallScale.z / 2 - buffer
-		&& position.z < wallPos.z + wallScale.z / 2 + buffer;
 }

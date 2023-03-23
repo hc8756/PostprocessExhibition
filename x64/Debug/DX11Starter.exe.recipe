@@ -2,33 +2,33 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\DX11Starter.exe</FullPath>
+      <FullPath>C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\DX11Starter.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
-      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\PixelShader.cso</FullPath>
+      <FullPath>C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\PixelShader.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\PixelShaderBlur.cso</FullPath>
+      <FullPath>C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\PixelShaderBlur.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\PixelShaderBrightCont.cso</FullPath>
+      <FullPath>C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\PixelShaderBrightCont.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\PixelShaderSky.cso</FullPath>
+      <FullPath>C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\PixelShaderSky.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\PixelShaderSobel.cso</FullPath>
+      <FullPath>C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\PixelShaderSobel.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\VertexShader.cso</FullPath>
+      <FullPath>C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\VertexShader.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\VertexShaderFull.cso</FullPath>
+      <FullPath>C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\VertexShaderFull.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\VertexShaderSky.cso</FullPath>
+      <FullPath>C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\VertexShaderSky.cso</FullPath>
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />

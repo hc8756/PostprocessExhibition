@@ -61,7 +61,7 @@ void Exhibit::PlaceObject(GameEntity* entity, const DirectX::XMFLOAT3& position)
 	entity->GetTransform()->SetPosition(origin.x + position.x, origin.y + position.y, origin.z + position.z);
 }
 
-// places this exhibit up against another one in the desired direction. This does not move objects already within the exhibit
+// places this exhibit up against another one in the desired direction. This does not move objects already within the exhibit and can only be used once per exhibit
 void Exhibit::AttachTo(Exhibit* other, Direction direction)
 {
 	XMFLOAT2 shiftDir = XMFLOAT2();
@@ -90,8 +90,46 @@ void Exhibit::AttachTo(Exhibit* other, Direction direction)
 		surface->GetTransform()->MoveAbsolute(shift.x, 0, shift.z);
 	}
 
-	// replace full walls with doorway
+	// create doorway
+	XMFLOAT3 targetMid = XMFLOAT3(other->origin.x + shiftDir.x * other->size / 2, 0, other->origin.z + shiftDir.y * other->size / 2); // ignore y
+	GameEntity* wall1 = nullptr;
+	for (GameEntity* wall : *surfaces) {
+		XMFLOAT3 wallPos = wall->GetTransform()->GetPosition();
+		if (wallPos.x == targetMid.x && wallPos.z == targetMid.z) {
+			wall1 = wall;
+			break;
+		}
+	}
+	
+	targetMid = XMFLOAT3(origin.x - shiftDir.x * size / 2, 0, origin.z - shiftDir.y * size / 2); // ignore y
+	GameEntity* wall2 = nullptr;
+	for (GameEntity* wall : *(other->surfaces)) {
+		XMFLOAT3 wallPos = wall->GetTransform()->GetPosition();
+		if (wallPos.x == targetMid.x && wallPos.z == targetMid.z) {
+			wall2 = wall;
+			break;
+		}
+	}
 
+	if (wall1 == nullptr || wall2 == nullptr) {
+		return;
+	}
+
+	float DOOR_GAP = 7.0f;
+	float greaterLength = (size > other->size ? size : other->size);
+	float newWidth = (greaterLength - DOOR_GAP) / 2;
+
+	if (direction == POSX || direction == NEGX) {
+		wall1->GetTransform()->SetScale(THICKNESS, WALL_HEIGHT, newWidth);
+		wall2->GetTransform()->SetScale(THICKNESS, WALL_HEIGHT, newWidth);
+	} else {
+		wall1->GetTransform()->SetScale(newWidth, WALL_HEIGHT, THICKNESS);
+		wall2->GetTransform()->SetScale(newWidth, WALL_HEIGHT, THICKNESS);
+	}
+
+	float wallShift = (newWidth + DOOR_GAP) / 2;
+	wall1->GetTransform()->MoveAbsolute(shiftDir.y * wallShift, 0, shiftDir.x * wallShift);
+	wall2->GetTransform()->MoveAbsolute(shiftDir.y * -wallShift, 0, shiftDir.x * -wallShift);
 }
 
 void Exhibit::CheckCollisions(Camera* camera)
@@ -101,18 +139,6 @@ void Exhibit::CheckCollisions(Camera* camera)
 	}
 
 	XMFLOAT3 camPos = camera->GetTransform()->GetPosition();
-	/*if (posXWall != nullptr && IsInWall(camPos, posXWall)) {
-		camera->GetTransform()->SetPosition(posXWall->GetTransform()->GetPosition().x - posXWall->GetTransform()->GetScale().x / 2 - buffer, camPos.y, camPos.z);
-	}
-	if (negXWall != nullptr && IsInWall(camPos, negXWall)) {
-		camera->GetTransform()->SetPosition(negXWall->GetTransform()->GetPosition().x + negXWall->GetTransform()->GetScale().x / 2 + buffer, camPos.y, camPos.z);
-	}
-	if (posZWall != nullptr && IsInWall(camPos, posZWall)) {
-		camera->GetTransform()->SetPosition(camPos.x, camPos.y, posZWall->GetTransform()->GetPosition().z - posZWall->GetTransform()->GetScale().z / 2 - buffer);
-	}
-	if (negZWall != nullptr && IsInWall(camPos, negZWall)) {
-		camera->GetTransform()->SetPosition(camPos.x, camPos.y, negZWall->GetTransform()->GetPosition().z + negZWall->GetTransform()->GetScale().z / 2 + buffer);
-	}*/
 
 	int extraWidth = 1; // added distance from the wall for the collision
 	for (int i = 1; i < surfaces->size(); i++) { // skip the first element because that is the floor

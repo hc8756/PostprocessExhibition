@@ -264,7 +264,7 @@ void Game::Init()
 	exhibits.push_back(new Exhibit(25));
 	exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
 
-	exhibits.push_back(new Exhibit(25));
+	exhibits.push_back(new Exhibit(35));
 	exhibits[1]->AttachTo(exhibits[0], POSX);
 
 }

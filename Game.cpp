@@ -172,7 +172,12 @@ void Game::Init()
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/cobblestone/cobblestone_roughness.png").c_str(), 0, cobblestoneRoughnessSRV.GetAddressOf());
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/cobblestone/cobblestone_normal.png").c_str(), 0, cobblestoneNormalSRV.GetAddressOf());
 
-	//CreateDDSTextureFromFile(device.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/SunnyCubeMap.dds").c_str(), 0, skySRV.GetAddressOf());
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> monaLisaSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultBlackSRV; // default for metal and roughness
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultNormalSRV;
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/mona lisa.png").c_str(), 0, monaLisaSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/defaults/blackTexture.png").c_str(), 0, defaultBlackSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/defaults/defaultNormals.png").c_str(), 0, defaultNormalSRV.GetAddressOf());
 	
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> spaceBox = CreateCubemap(
 		GetFullPathTo_Wide(L"../../Assets/Textures/SmallerSpaceBox/Left_Tex.png").c_str(),
@@ -217,9 +222,17 @@ void Game::Init()
 	material3->AddTextureSRV("RoughnessMap", cobblestoneRoughnessSRV);
 	material3->AddTextureSRV("NormalMap", cobblestoneNormalSRV);
 
+	Material* monaLisaMaterial = new Material(DirectX::XMFLOAT3(+2.5f, +2.5f, +2.5f), 0.0f, pixelShader, vertexShader);
+	monaLisaMaterial->AddSamplerState("BasicSamplerState", samplerState);
+	monaLisaMaterial->AddTextureSRV("Albedo", monaLisaSRV);
+	monaLisaMaterial->AddTextureSRV("MetalnessMap", defaultBlackSRV);
+	monaLisaMaterial->AddTextureSRV("RoughnessMap", defaultBlackSRV);
+	monaLisaMaterial->AddTextureSRV("NormalMap", defaultNormalSRV);
+
 	materialList.push_back(material1);
 	materialList.push_back(material2);
 	materialList.push_back(material3);
+	materialList.push_back(monaLisaMaterial);
 
 	//Create entities
 	GameEntity* entity1 = new GameEntity(sphere,material1);
@@ -254,18 +267,24 @@ void Game::Init()
 	Input::GetInstance().SwapMouseVisible();
 
 	// set up exhibits
-	//Exhibit::mainEntityList = &entityList;
 	Exhibit::cube = cube;
 	Exhibit::cobblestone = material3;
 
+	// brightness contrast exhibit
 	entityList[0]->GetTransform()->SetScale(1.0f, 1.0f, 1.0f); // earth scale
 	entityList[1]->GetTransform()->SetScale(0.25f, 0.25f, 0.25f); // moon scale
 
 	exhibits.push_back(new Exhibit(25));
 	exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
 
+	// blur exhibit
 	exhibits.push_back(new Exhibit(35));
 	exhibits[1]->AttachTo(exhibits[0], POSX);
+
+	GameEntity* theMonaLisa = new GameEntity(cube, monaLisaMaterial);
+	entityList.push_back(theMonaLisa);
+	theMonaLisa->GetTransform()->SetScale(4.0f, 6.0f, 4.0f);
+	exhibits[1]->PlaceObject(theMonaLisa, XMFLOAT3(0, 3.0f, 0));
 
 }
 

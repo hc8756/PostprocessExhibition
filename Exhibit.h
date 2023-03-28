@@ -31,5 +31,5 @@ private:
 	std::vector<GameEntity*>* surfaces; // the floor and walls
 
 	const float THICKNESS = 1;
-	const float WALL_HEIGHT = 6;
+	const float WALL_HEIGHT = 10;
 };

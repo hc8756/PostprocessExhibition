@@ -35,6 +35,7 @@ private:
 	void LoadShaders(); 
 	void CreateBasicGeometry();
 	void ResizePostProcessResources();
+	Material* CreateMaterial(const std::wstring* albedoPath, const std::wstring* normalsPath, const std::wstring* roughnessPath, const std::wstring* metalPath); // use null for defaults
 
 	bool firstPerson;
 
@@ -47,6 +48,7 @@ private:
 	// Buffers to hold actual geometry data
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 	
 	// Shaders and shader-related constructs
 	SimplePixelShader* pixelShader;
@@ -55,6 +57,9 @@ private:
 	SimpleVertexShader* vertexShaderSky;
 	SimplePixelShader* pixelShaderSobel;
 	SimpleVertexShader* vertexShaderFull;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultBlackSRV; // default for metal and roughness
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultNormalSRV;
 
 	int exhibitIndex;
 

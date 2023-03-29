@@ -138,13 +138,8 @@ void Game::Init()
 	samplerDesc.MaxAnisotropy = 5;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	//create sampler state
-	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 	device->CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
 	//create srv's
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> earthAlbedoSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> earthMetalSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> earthRoughnessSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> earthNormalSRV;
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> moonAlbedoSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> moonRoughnessSRV;
@@ -156,12 +151,10 @@ void Game::Init()
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneNormalSRV;
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> skySRV;
+	
 	//Load texture
-
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/earth_albedo.jpg").c_str(), 0, earthAlbedoSRV.GetAddressOf());
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/universal_metal.jpg").c_str(), 0, earthMetalSRV.GetAddressOf());
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/earth_roughness.jpg").c_str(), 0, earthRoughnessSRV.GetAddressOf());
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/earth_normal.jpg").c_str(), 0, earthNormalSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/defaults/blackTexture.png").c_str(), 0, defaultBlackSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/defaults/defaultNormals.png").c_str(), 0, defaultNormalSRV.GetAddressOf());
 
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/moon_albedo.jpg").c_str(), 0, moonAlbedoSRV.GetAddressOf());
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/moon_roughness.jpg").c_str(), 0, moonRoughnessSRV.GetAddressOf());
@@ -173,11 +166,8 @@ void Game::Init()
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/cobblestone/cobblestone_normal.png").c_str(), 0, cobblestoneNormalSRV.GetAddressOf());
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> monaLisaSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultBlackSRV; // default for metal and roughness
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultNormalSRV;
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/mona lisa.png").c_str(), 0, monaLisaSRV.GetAddressOf());
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/defaults/blackTexture.png").c_str(), 0, defaultBlackSRV.GetAddressOf());
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/defaults/defaultNormals.png").c_str(), 0, defaultNormalSRV.GetAddressOf());
+	
 	
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> spaceBox = CreateCubemap(
 		GetFullPathTo_Wide(L"../../Assets/Textures/SmallerSpaceBox/Left_Tex.png").c_str(),
@@ -198,20 +188,18 @@ void Game::Init()
 		device,
 		context);
 
-
-
 	//create materials
-	Material* material1 = new Material(DirectX::XMFLOAT3(+2.5f, +2.5f, +2.5f),0.0f,pixelShader,vertexShader);
-	material1->AddSamplerState("BasicSamplerState", samplerState);
-	material1->AddTextureSRV("Albedo", earthAlbedoSRV);
-	material1->AddTextureSRV("MetalnessMap", earthMetalSRV);
-	material1->AddTextureSRV("RoughnessMap", earthRoughnessSRV);
-	material1->AddTextureSRV("NormalMap", earthNormalSRV);
+	Material* material1 = CreateMaterial(
+		&GetFullPathTo_Wide(L"../../Assets/Textures/earth_albedo.jpg"),
+		&GetFullPathTo_Wide(L"../../Assets/Textures/earth_normal.jpg"),
+		&GetFullPathTo_Wide(L"../../Assets/Textures/earth_roughness.jpg"),
+		&GetFullPathTo_Wide(L"../../Assets/Textures/universal_metal.jpg")
+	);
 
 	Material* material2 = new Material(DirectX::XMFLOAT3(+2.5f, +2.5f, +2.5f), 0.0f, pixelShader, vertexShader);
 	material2->AddSamplerState("BasicSamplerState", samplerState);
 	material2->AddTextureSRV("Albedo", moonAlbedoSRV);
-	material2->AddTextureSRV("MetalnessMap", earthMetalSRV);
+	//material2->AddTextureSRV("MetalnessMap", earthMetalSRV);
 	material2->AddTextureSRV("RoughnessMap", moonRoughnessSRV);
 	material2->AddTextureSRV("NormalMap", moonNormalSRV);
 
@@ -376,6 +364,43 @@ void Game::ResizePostProcessResources()
 	device->CreateShaderResourceView(ppTexture.Get(), 0, ppSRV.GetAddressOf());
 	device->CreateShaderResourceView(sceneNormalsTexture.Get(), 0, sceneNormalsSRV.GetAddressOf());
 	device->CreateShaderResourceView(sceneDepthsTexture.Get(), 0, sceneDepthSRV.GetAddressOf());
+}
+
+Material* Game::CreateMaterial(const std::wstring* albedoPath, const std::wstring* normalsPath, const std::wstring* roughnessPath, const std::wstring* metalPath)
+{
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> albedoSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughnessSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> metalSRV;
+
+	CreateWICTextureFromFile(device.Get(), context.Get(), (*albedoPath).c_str(), 0, albedoSRV.GetAddressOf());
+	
+	if (normalsPath == nullptr) {
+		normalSRV = defaultNormalSRV;
+	} else {
+		CreateWICTextureFromFile(device.Get(), context.Get(), (*normalsPath).c_str(), 0, normalSRV.GetAddressOf());
+	}
+
+	if (roughnessPath == nullptr) {
+		roughnessSRV = defaultBlackSRV;
+	} else {
+		CreateWICTextureFromFile(device.Get(), context.Get(), (*roughnessPath).c_str(), 0, roughnessSRV.GetAddressOf());
+	}
+
+	if (metalPath == nullptr) {
+		metalSRV = defaultBlackSRV;
+	} else {
+		CreateWICTextureFromFile(device.Get(), context.Get(), (*metalPath).c_str(), 0, metalSRV.GetAddressOf());
+	}
+
+	Material* material = new Material(DirectX::XMFLOAT3(+2.5f, +2.5f, +2.5f), 0.0f, pixelShader, vertexShader);
+	material->AddSamplerState("BasicSamplerState", samplerState);
+	material->AddTextureSRV("Albedo", albedoSRV);
+	material->AddTextureSRV("NormalMap", normalSRV);
+	material->AddTextureSRV("RoughnessMap", roughnessSRV);
+	material->AddTextureSRV("MetalnessMap", metalSRV);
+
+	return material;
 }
 
 

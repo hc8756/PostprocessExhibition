@@ -4,18 +4,26 @@ Texture2D SurfaceTexture  : register(t0); // "t" registers for textures
 Texture2D SpecularMap  : register(t1);
 Texture2D NormalMap  : register(t2);*/
 Texture2D Albedo:  register(t0); 
-Texture2D NormalMap:  register(t1); 
+Texture2D NormalMap	:  register(t1); 
 Texture2D RoughnessMap   :  register(t2); 
 Texture2D MetalnessMap   :  register(t3);
+Texture2D ShadowMap				: register(t4);
 SamplerState BasicSamplerState : register(s0); // "s" registers for samplers
-
+SamplerComparisonState ShadowSampler	: register(s1); // Different data type!
 cbuffer ExternalData : register(b0)
 {
-	float3 colorTint;
-	float roughness;
-	float3 ambientColor;
-	float3 cameraPosition;
+	// Scene related
 	Light lights[5];
+
+	float3 ambientColor;
+
+	// Camera related
+	float3 cameraPosition;
+
+	// Material related
+	float3 colorTint;
+	float2 uvScale;
+	float2 uvOffset;
 }
 
 float4 main(VertexToPixel input) : SV_TARGET
@@ -50,19 +58,31 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	//specular
 	float3 specularColor = lerp(F0_NON_METAL.rrr, surfaceColor.rgb, metalness);
+	
 
+	// SHADOW MAPPING --------------------------------
+	// Note: This is only for a SINGLE light!  If you want multiple lights to cast shadows,
+	// you need to do all of this multiple times IN THIS SHADER.
+	float shadowAmount;
+	float2 shadowUV = input.posForShadow.xy / input.posForShadow.w * 0.5f + 0.5f;
+	shadowUV.y = 1.0f - shadowUV.y;
+
+	// Calculate this pixel's depth from the light
+	float depthFromLight = input.posForShadow.z / input.posForShadow.w;
+	shadowAmount = ShadowMap.SampleCmpLevelZero(ShadowSampler, shadowUV, depthFromLight);
 	for (int i = 0; i < 5; i++) {
+		
 		//directional light
 		if (lights[i].Type == 0) {
 			totalLight+= DirectionalLight(lights[i], input.normal, input.worldPosition, cameraPosition, roughness, metalness, surfaceColor, specularColor);
+			totalLight *= (lights[i].CastsShadows ? shadowAmount : 1.0f);
 		}
 		else if (lights[i].Type == 1) {
 			totalLight+= PointLight(lights[i], input.normal, input.worldPosition, cameraPosition, roughness, metalness, surfaceColor, specularColor);
 		}
 	}
-
+	
 	return float4(pow(totalLight+ambientTerm,1.0f/2.2f), 1);
-
 }
 
 

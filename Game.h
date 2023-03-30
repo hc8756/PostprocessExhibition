@@ -12,6 +12,8 @@
 #include "Lights.h"
 #include "Sky.h"
 #include "Exhibit.h"
+#include <stdlib.h>
+#include <optional>
 
 
 class Game 
@@ -35,7 +37,7 @@ private:
 	void LoadShaders(); 
 	void CreateBasicGeometry();
 	void ResizePostProcessResources();
-	Material* CreateMaterial(const std::wstring* albedoPath, const std::wstring* normalsPath, const std::wstring* roughnessPath, const std::wstring* metalPath); // use null for defaults
+	Material* CreateMaterial(const wchar_t* albedoPath, const wchar_t* normalsPath, const wchar_t* roughnessPath, const wchar_t* metalPath); // use nullptr for defaults
 
 	bool firstPerson;
 

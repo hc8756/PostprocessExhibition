@@ -1,7 +1,2 @@
 ﻿  Game.cpp
-D:\Profiles\ejb3432\Documents\GitHub\750project\Game.cpp(196): error C2102: '&' requires l-value
-D:\Profiles\ejb3432\Documents\GitHub\750project\Game.cpp(195): error C2102: '&' requires l-value
-D:\Profiles\ejb3432\Documents\GitHub\750project\Game.cpp(194): error C2102: '&' requires l-value
-D:\Profiles\ejb3432\Documents\GitHub\750project\Game.cpp(193): error C2102: '&' requires l-value
-  Main.cpp
-  Generating Code...
+  DX11Starter.vcxproj -> C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\DX11Starter.exe

@@ -139,35 +139,10 @@ void Game::Init()
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	//create sampler state
 	device->CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
-	//create srv's
-
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> moonAlbedoSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> moonRoughnessSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> moonNormalSRV;
-
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneAlbedoSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneMetalSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneRoughnessSRV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestoneNormalSRV;
-
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> skySRV;
 	
 	//Load texture
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/defaults/blackTexture.png").c_str(), 0, defaultBlackSRV.GetAddressOf());
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/defaults/defaultNormals.png").c_str(), 0, defaultNormalSRV.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/moon_albedo.jpg").c_str(), 0, moonAlbedoSRV.GetAddressOf());
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/moon_roughness.jpg").c_str(), 0, moonRoughnessSRV.GetAddressOf());
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/moon_normal.jpg").c_str(), 0, moonNormalSRV.GetAddressOf());
-
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/cobblestone/cobblestone_albedo.png").c_str(), 0, cobblestoneAlbedoSRV.GetAddressOf());
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/cobblestone/cobblestone_metal.png").c_str(), 0, cobblestoneMetalSRV.GetAddressOf());
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/cobblestone/cobblestone_roughness.png").c_str(), 0, cobblestoneRoughnessSRV.GetAddressOf());
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/cobblestone/cobblestone_normal.png").c_str(), 0, cobblestoneNormalSRV.GetAddressOf());
-
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> monaLisaSRV;
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/mona lisa.png").c_str(), 0, monaLisaSRV.GetAddressOf());
-	
 	
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> spaceBox = CreateCubemap(
 		GetFullPathTo_Wide(L"../../Assets/Textures/SmallerSpaceBox/Left_Tex.png").c_str(),
@@ -190,37 +165,25 @@ void Game::Init()
 
 	//create materials
 	Material* material1 = CreateMaterial(
-		&GetFullPathTo_Wide(L"../../Assets/Textures/earth_albedo.jpg"),
-		&GetFullPathTo_Wide(L"../../Assets/Textures/earth_normal.jpg"),
-		&GetFullPathTo_Wide(L"../../Assets/Textures/earth_roughness.jpg"),
-		&GetFullPathTo_Wide(L"../../Assets/Textures/universal_metal.jpg")
+		L"../../Assets/Textures/earth_albedo.jpg",
+		L"../../Assets/Textures/earth_normal.jpg",
+		L"../../Assets/Textures/earth_roughness.jpg",
+		nullptr
 	);
 
-	Material* material2 = new Material(DirectX::XMFLOAT3(+2.5f, +2.5f, +2.5f), 0.0f, pixelShader, vertexShader);
-	material2->AddSamplerState("BasicSamplerState", samplerState);
-	material2->AddTextureSRV("Albedo", moonAlbedoSRV);
-	//material2->AddTextureSRV("MetalnessMap", earthMetalSRV);
-	material2->AddTextureSRV("RoughnessMap", moonRoughnessSRV);
-	material2->AddTextureSRV("NormalMap", moonNormalSRV);
+	Material* material2 = CreateMaterial(
+		L"../../Assets/Textures/moon_albedo.jpg",
+		L"../../Assets/Textures/moon_normal.jpg",
+		L"../../Assets/Textures/moon_roughness.jpg",
+		nullptr
+	);
 
-	Material* material3 = new Material(DirectX::XMFLOAT3(+2.5f, +2.5f, +2.5f), 0.0f, pixelShader, vertexShader);
-	material3->AddSamplerState("BasicSamplerState", samplerState);
-	material3->AddTextureSRV("Albedo", cobblestoneAlbedoSRV);
-	material3->AddTextureSRV("MetalnessMap", cobblestoneMetalSRV);
-	material3->AddTextureSRV("RoughnessMap", cobblestoneRoughnessSRV);
-	material3->AddTextureSRV("NormalMap", cobblestoneNormalSRV);
-
-	Material* monaLisaMaterial = new Material(DirectX::XMFLOAT3(+2.5f, +2.5f, +2.5f), 0.0f, pixelShader, vertexShader);
-	monaLisaMaterial->AddSamplerState("BasicSamplerState", samplerState);
-	monaLisaMaterial->AddTextureSRV("Albedo", monaLisaSRV);
-	monaLisaMaterial->AddTextureSRV("MetalnessMap", defaultBlackSRV);
-	monaLisaMaterial->AddTextureSRV("RoughnessMap", defaultBlackSRV);
-	monaLisaMaterial->AddTextureSRV("NormalMap", defaultNormalSRV);
-
-	materialList.push_back(material1);
-	materialList.push_back(material2);
-	materialList.push_back(material3);
-	materialList.push_back(monaLisaMaterial);
+	Material* material3 = CreateMaterial(
+		L"../../Assets/Textures/cobblestone/cobblestone_albedo.png",
+		L"../../Assets/Textures/cobblestone/cobblestone_normal.png",
+		L"../../Assets/Textures/cobblestone/cobblestone_roughness.png",
+		L"../../Assets/Textures/cobblestone/cobblestone_metal.png"
+	);
 
 	//Create entities
 	GameEntity* entity1 = new GameEntity(sphere,material1);
@@ -233,7 +196,6 @@ void Game::Init()
 	//move model entities around so that they don't overlap
 	entityList[0]->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
 	entityList[1]->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
-
 
 	//create camera 
 	camera = new Camera(0, 0, -10, 10.0f, 0.2f, XM_PIDIV4, (float)width / height);
@@ -269,11 +231,27 @@ void Game::Init()
 	exhibits.push_back(new Exhibit(35));
 	exhibits[1]->AttachTo(exhibits[0], POSX);
 
+	Material* monaLisaMaterial = CreateMaterial(L"../../Assets/Textures/mona lisa.png", nullptr, nullptr, nullptr);
+	Material* starryNightMaterial = CreateMaterial(L"../../Assets/Textures/starry night.jpg", nullptr, nullptr, nullptr);
+	Material* persistMemMaterial = CreateMaterial(L"../../Assets/Textures/persistence memory.png", nullptr, nullptr, nullptr);
+
 	GameEntity* theMonaLisa = new GameEntity(cube, monaLisaMaterial);
 	entityList.push_back(theMonaLisa);
 	theMonaLisa->GetTransform()->SetScale(4.0f, 6.0f, 4.0f);
+	theMonaLisa->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
 	exhibits[1]->PlaceObject(theMonaLisa, XMFLOAT3(0, 3.0f, 0));
 
+	GameEntity* starryNight = new GameEntity(cube, starryNightMaterial);
+	entityList.push_back(starryNight);
+	starryNight->GetTransform()->SetScale(4.0f, 6.0f, 4.0f);
+	starryNight->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
+	exhibits[1]->PlaceObject(starryNight, XMFLOAT3(5, 3.0f, 0));
+
+	GameEntity* persistenceMemory = new GameEntity(cube, persistMemMaterial);
+	entityList.push_back(persistenceMemory);
+	persistenceMemory->GetTransform()->SetScale(4.0f, 6.0f, 4.0f);
+	persistenceMemory->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
+	exhibits[1]->PlaceObject(persistenceMemory, XMFLOAT3(-5, 3.0f, 0));
 }
 
 // --------------------------------------------------------
@@ -366,31 +344,31 @@ void Game::ResizePostProcessResources()
 	device->CreateShaderResourceView(sceneDepthsTexture.Get(), 0, sceneDepthSRV.GetAddressOf());
 }
 
-Material* Game::CreateMaterial(const std::wstring* albedoPath, const std::wstring* normalsPath, const std::wstring* roughnessPath, const std::wstring* metalPath)
+Material* Game::CreateMaterial(const wchar_t* albedoPath, const wchar_t* normalsPath, const wchar_t* roughnessPath, const wchar_t* metalPath)
 {
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> albedoSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> roughnessSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> metalSRV;
 
-	CreateWICTextureFromFile(device.Get(), context.Get(), (*albedoPath).c_str(), 0, albedoSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(albedoPath).c_str(), 0, albedoSRV.GetAddressOf());
 	
 	if (normalsPath == nullptr) {
 		normalSRV = defaultNormalSRV;
 	} else {
-		CreateWICTextureFromFile(device.Get(), context.Get(), (*normalsPath).c_str(), 0, normalSRV.GetAddressOf());
+		CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(normalsPath).c_str(), 0, normalSRV.GetAddressOf());
 	}
 
 	if (roughnessPath == nullptr) {
 		roughnessSRV = defaultBlackSRV;
 	} else {
-		CreateWICTextureFromFile(device.Get(), context.Get(), (*roughnessPath).c_str(), 0, roughnessSRV.GetAddressOf());
+		CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(roughnessPath).c_str(), 0, roughnessSRV.GetAddressOf());
 	}
 
 	if (metalPath == nullptr) {
 		metalSRV = defaultBlackSRV;
 	} else {
-		CreateWICTextureFromFile(device.Get(), context.Get(), (*metalPath).c_str(), 0, metalSRV.GetAddressOf());
+		CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(metalPath).c_str(), 0, metalSRV.GetAddressOf());
 	}
 
 	Material* material = new Material(DirectX::XMFLOAT3(+2.5f, +2.5f, +2.5f), 0.0f, pixelShader, vertexShader);
@@ -400,6 +378,7 @@ Material* Game::CreateMaterial(const std::wstring* albedoPath, const std::wstrin
 	material->AddTextureSRV("RoughnessMap", roughnessSRV);
 	material->AddTextureSRV("MetalnessMap", metalSRV);
 
+	materialList.push_back(material);
 	return material;
 }
 
@@ -502,7 +481,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		ImGui::DragFloat(": contrast", &contrast, 0.01f, 0.0f, 10.0f);
 	}
 	else if (exhibitIndex == 1) {
-		ImGui::DragInt(": blur", &blur, 1, 0, 50);
+		ImGui::DragInt(": blur", &blur, 1, 0, 20);
 	}
 	ImGui::End();
 	//Assemble Together Draw Data

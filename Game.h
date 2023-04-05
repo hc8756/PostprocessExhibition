@@ -38,6 +38,7 @@ private:
 	void CreateBasicGeometry();
 	void ResizePostProcessResources();
 	Material* CreateMaterial(const wchar_t* albedoPath, const wchar_t* normalsPath, const wchar_t* roughnessPath, const wchar_t* metalPath); // use nullptr for defaults
+	Material* CreateColorMaterial(XMFLOAT3 color);
 
 	bool firstPerson;
 
@@ -62,6 +63,7 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultBlackSRV; // default for metal and roughness
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultNormalSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pureWhiteSRV;
 
 	int exhibitIndex;
 

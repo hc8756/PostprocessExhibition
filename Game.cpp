@@ -140,9 +140,10 @@ void Game::Init()
 	//create sampler state
 	device->CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
 	
-	//Load texture
+	//Load textures
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/defaults/blackTexture.png").c_str(), 0, defaultBlackSRV.GetAddressOf());
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/defaults/defaultNormals.png").c_str(), 0, defaultNormalSRV.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/defaults/pureWhite.png").c_str(), 0, pureWhiteSRV.GetAddressOf());
 	
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> spaceBox = CreateCubemap(
 		GetFullPathTo_Wide(L"../../Assets/Textures/SmallerSpaceBox/Left_Tex.png").c_str(),
@@ -186,16 +187,10 @@ void Game::Init()
 	);
 
 	//Create entities
-	GameEntity* entity1 = new GameEntity(sphere,material1);
-	GameEntity* entity2 = new GameEntity(sphere, material2);
-
-	//add entities to the entitiy list
-	entityList.push_back(entity1);
-	entityList.push_back(entity2);
+	;
 
 	//move model entities around so that they don't overlap
-	entityList[0]->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
-	entityList[1]->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
+	
 
 	//create camera 
 	camera = new Camera(0, 0, -10, 10.0f, 0.2f, XM_PIDIV4, (float)width / height);
@@ -221,14 +216,54 @@ void Game::Init()
 	Exhibit::cobblestone = material3;
 
 	// brightness contrast exhibit
-	entityList[0]->GetTransform()->SetScale(1.0f, 1.0f, 1.0f); // earth scale
-	entityList[1]->GetTransform()->SetScale(0.25f, 0.25f, 0.25f); // moon scale
+	/*GameEntity* earth = new GameEntity(sphere, material1);
+	entityList.push_back(earth);
+	earth->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
+	earth->GetTransform()->SetScale(1.0f, 1.0f, 1.0f);
+
+	GameEntity* moon = new GameEntity(sphere, material2);
+	entityList.push_back(moon);
+	moon->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
+	moon->GetTransform()->SetScale(0.25f, 0.25f, 0.25f);*/ 
+	//exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
 
 	exhibits.push_back(new Exhibit(25));
-	exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
+
+	GameEntity* redSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 0.0f, 0.0f)));
+	entityList.push_back(redSphere);
+	exhibits[0]->PlaceObject(redSphere, XMFLOAT3(5, 2, -5));
+
+	GameEntity* greenSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 2.55f, 0.0f)));
+	entityList.push_back(greenSphere);
+	exhibits[0]->PlaceObject(greenSphere, XMFLOAT3(-5, 2, -5));
+
+	GameEntity* blueSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 0.0f, 2.55f)));
+	entityList.push_back(blueSphere);
+	exhibits[0]->PlaceObject(blueSphere, XMFLOAT3(5, 2, 5));
+
+	GameEntity* blackSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 0.0f, 0.0f)));
+	entityList.push_back(blackSphere);
+	exhibits[0]->PlaceObject(blackSphere, XMFLOAT3(-5, 2, 5));
+
+	GameEntity* whiteSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 2.55f, 2.55f)));
+	entityList.push_back(whiteSphere);
+	exhibits[0]->PlaceObject(whiteSphere, XMFLOAT3(3, 5, -3));
+
+	GameEntity* yellowSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 2.55f, 0.0f)));
+	entityList.push_back(yellowSphere);
+	exhibits[0]->PlaceObject(yellowSphere, XMFLOAT3(-3, 5, -3));
+
+	GameEntity* magentaSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 0.0f, 2.55f)));
+	entityList.push_back(magentaSphere);
+	exhibits[0]->PlaceObject(magentaSphere, XMFLOAT3(3, 5, 3));
+
+	GameEntity* cyanSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 2.55f, 2.55f)));
+	entityList.push_back(cyanSphere);
+	exhibits[0]->PlaceObject(cyanSphere, XMFLOAT3(-3, 5, 3));
+
 
 	// blur exhibit
-	exhibits.push_back(new Exhibit(35));
+	exhibits.push_back(new Exhibit(20));
 	exhibits[1]->AttachTo(exhibits[0], POSX);
 
 	Material* monaLisaMaterial = CreateMaterial(L"../../Assets/Textures/mona lisa.png", nullptr, nullptr, nullptr);
@@ -237,21 +272,21 @@ void Game::Init()
 
 	GameEntity* theMonaLisa = new GameEntity(cube, monaLisaMaterial);
 	entityList.push_back(theMonaLisa);
-	theMonaLisa->GetTransform()->SetScale(4.0f, 6.0f, 4.0f);
+	theMonaLisa->GetTransform()->SetScale(1.0f, 8.0f, 6.0f);
 	theMonaLisa->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
-	exhibits[1]->PlaceObject(theMonaLisa, XMFLOAT3(0, 3.0f, 0));
+	exhibits[1]->PlaceObject(theMonaLisa, XMFLOAT3(0, 5.0f, -9.9f));
 
 	GameEntity* starryNight = new GameEntity(cube, starryNightMaterial);
 	entityList.push_back(starryNight);
-	starryNight->GetTransform()->SetScale(4.0f, 6.0f, 4.0f);
+	starryNight->GetTransform()->SetScale(1.0f, 7.0f, 10.0f);
 	starryNight->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
-	exhibits[1]->PlaceObject(starryNight, XMFLOAT3(5, 3.0f, 0));
+	exhibits[1]->PlaceObject(starryNight, XMFLOAT3(0, 5.0f, 9.9f));
 
-	GameEntity* persistenceMemory = new GameEntity(cube, persistMemMaterial);
+	/*GameEntity* persistenceMemory = new GameEntity(cube, persistMemMaterial);
 	entityList.push_back(persistenceMemory);
 	persistenceMemory->GetTransform()->SetScale(4.0f, 6.0f, 4.0f);
 	persistenceMemory->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
-	exhibits[1]->PlaceObject(persistenceMemory, XMFLOAT3(-5, 3.0f, 0));
+	exhibits[1]->PlaceObject(persistenceMemory, XMFLOAT3(-5, 3.0f, 0));*/
 }
 
 // --------------------------------------------------------
@@ -382,6 +417,19 @@ Material* Game::CreateMaterial(const wchar_t* albedoPath, const wchar_t* normals
 	return material;
 }
 
+Material* Game::CreateColorMaterial(XMFLOAT3 color)
+{
+	Material* material = new Material(color, 0.0f, pixelShader, vertexShader);
+	material->AddSamplerState("BasicSamplerState", samplerState);
+	material->AddTextureSRV("Albedo", pureWhiteSRV);
+	material->AddTextureSRV("NormalMap", defaultNormalSRV);
+	material->AddTextureSRV("RoughnessMap", defaultBlackSRV);
+	material->AddTextureSRV("MetalnessMap", defaultBlackSRV);
+
+	materialList.push_back(material);
+	return material;
+}
+
 
 // --------------------------------------------------------
 // Update your game here - user input, move objects, AI, etc.
@@ -410,13 +458,13 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 
 	//make items rotate along y axis
-	static float increment = 0.5f;
-	increment += 0.0005f;
+	/*static float increment = 0.5f;
+	increment += 0.0005f;*/
 	
 	// move moon
-	entityList[0]->GetTransform()->SetRotation(0.0f, increment/2, 0.0f);
+	/*entityList[0]->GetTransform()->SetRotation(0.0f, increment/2, 0.0f);
 	entityList[1]->GetTransform()->SetPosition(2*sin(increment), 0.0f, 2*cos(increment));
-	exhibits[0]->PlaceObject(entityList[1], DirectX::XMFLOAT3(2 * sin(increment), 3.0f, 2 * cos(increment)));
+	exhibits[0]->PlaceObject(entityList[1], DirectX::XMFLOAT3(2 * sin(increment), 3.0f, 2 * cos(increment)))*/;
 
 	//code that will alter fov based on user input
 	/*float fov = camera->GetFoV();

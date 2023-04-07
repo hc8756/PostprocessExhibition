@@ -214,6 +214,12 @@ void Game::Init()
 	// set up exhibits
 	Exhibit::cube = cube;
 	Exhibit::cobblestone = material3;
+	Exhibit::marble = CreateMaterial(
+		L"../../Assets/Textures/marble/Marble_Tiles_001_basecolor.jpg",
+		L"../../Assets/Textures/marble/Marble_Tiles_001_normal.jpg",
+		L"../../Assets/Textures/marble/Marble_Tiles_001_roughness.jpg",
+		nullptr
+	);
 
 	// brightness contrast exhibit
 	/*GameEntity* earth = new GameEntity(sphere, material1);
@@ -281,6 +287,13 @@ void Game::Init()
 	starryNight->GetTransform()->SetScale(1.0f, 7.0f, 10.0f);
 	starryNight->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
 	exhibits[1]->PlaceObject(starryNight, XMFLOAT3(0, 5.0f, 9.9f));
+
+	Material* marble = CreateMaterial(
+		L"../../Assets/Textures/marble/Marble_Tiles_001_basecolor.jpg",
+		L"../../Assets/Textures/marble/Marble_Tiles_001_normal.jpg",
+		L"../../Assets/Textures/marble/Marble_Tiles_001_roughness.jpg",
+		nullptr
+	);
 
 	/*GameEntity* persistenceMemory = new GameEntity(cube, persistMemMaterial);
 	entityList.push_back(persistenceMemory);

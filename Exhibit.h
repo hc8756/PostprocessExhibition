@@ -15,6 +15,7 @@ class Exhibit
 public:
 	static Mesh* cube;
 	static Material* cobblestone;
+	static Material* marble;
 
 public:
 	Exhibit(float size);

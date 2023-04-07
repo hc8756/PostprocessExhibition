@@ -3,6 +3,7 @@
 //std::vector<GameEntity*>* Exhibit::mainEntityList;
 Mesh* Exhibit::cube;
 Material* Exhibit::cobblestone;
+Material* Exhibit::marble;
 
 // the position defaults to (0, 0, 0), use AttachTo() to place one relative to another
 Exhibit::Exhibit(float size)
@@ -20,22 +21,22 @@ Exhibit::Exhibit(float size)
 	surfaces->push_back(floor); // floor must be first in the list
 
 	// create all 4 walls by defualt, then remove them when attached to another exhibit
-	GameEntity* posXWall = new GameEntity(cube, cobblestone);
+	GameEntity* posXWall = new GameEntity(cube, marble);
 	posXWall->GetTransform()->SetScale(THICKNESS, WALL_HEIGHT, size);
 	posXWall->GetTransform()->SetPosition(origin.x + size / 2, posXWall->GetTransform()->GetScale().y / 2, origin.z);
 	surfaces->push_back(posXWall);
 
-	GameEntity* negXWall = new GameEntity(cube, cobblestone);
+	GameEntity* negXWall = new GameEntity(cube, marble);
 	negXWall->GetTransform()->SetScale(THICKNESS, WALL_HEIGHT, size);
 	negXWall->GetTransform()->SetPosition(origin.x - size / 2, negXWall->GetTransform()->GetScale().y / 2, origin.z);
 	surfaces->push_back(negXWall);
 
-	GameEntity* posZWall = new GameEntity(cube, cobblestone);	
+	GameEntity* posZWall = new GameEntity(cube, marble);
 	posZWall->GetTransform()->SetScale(size, WALL_HEIGHT, THICKNESS);
 	posZWall->GetTransform()->SetPosition(origin.x, posZWall->GetTransform()->GetScale().y / 2, origin.z + size / 2);
 	surfaces->push_back(posZWall);
 
-	GameEntity* negZWall = new GameEntity(cube, cobblestone);
+	GameEntity* negZWall = new GameEntity(cube, marble);
 	negZWall->GetTransform()->SetScale(size, WALL_HEIGHT, THICKNESS);
 	negZWall->GetTransform()->SetPosition(origin.x, negZWall->GetTransform()->GetScale().y / 2, origin.z - size / 2);
 	surfaces->push_back(negZWall);

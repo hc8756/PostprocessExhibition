@@ -37,6 +37,11 @@ void Material::SetMaterialColorTint(DirectX::XMFLOAT3 input)
 	colorTint = input;
 }
 
+void Material::SetPixelShader(SimplePixelShader* ps)
+{
+	pixelShader = ps;
+}
+
 void Material::AddTextureSRV(std::string s, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv)
 {
 	textureSRVs.insert({s,srv});

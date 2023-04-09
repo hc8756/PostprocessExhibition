@@ -288,18 +288,28 @@ void Game::Init()
 	starryNight->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
 	exhibits[1]->PlaceObject(starryNight, XMFLOAT3(0, 5.0f, 9.9f));
 
-	Material* marble = CreateMaterial(
-		L"../../Assets/Textures/marble/Marble_Tiles_001_basecolor.jpg",
-		L"../../Assets/Textures/marble/Marble_Tiles_001_normal.jpg",
-		L"../../Assets/Textures/marble/Marble_Tiles_001_roughness.jpg",
-		nullptr
-	);
-
 	/*GameEntity* persistenceMemory = new GameEntity(cube, persistMemMaterial);
 	entityList.push_back(persistenceMemory);
 	persistenceMemory->GetTransform()->SetScale(4.0f, 6.0f, 4.0f);
 	persistenceMemory->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
 	exhibits[1]->PlaceObject(persistenceMemory, XMFLOAT3(-5, 3.0f, 0));*/
+
+	// cel shading exhibit
+	exhibits.push_back(new Exhibit(40));
+	exhibits[2]->AttachTo(exhibits[0], NEGX);
+
+	Mesh* statueMesh = new Mesh(GetFullPathTo("../../Assets/Models/statue/statue.obj").c_str(), device);
+	Material* statueMaterial = CreateMaterial(
+		L"../../Assets/Models/statue/Statue.jpg",
+		nullptr,
+		nullptr,
+		nullptr
+	);
+	GameEntity* statue = new GameEntity(statueMesh, statueMaterial);
+	statue->GetTransform()->SetScale(0.1f, 0.1f, 0.1f);
+	statue->GetTransform()->SetRotation(XM_PIDIV2, -XM_PIDIV2, 0);
+	entityList.push_back(statue);
+	exhibits[2]->PlaceObject(statue, XMFLOAT3(0.0f, 0.0f, 0.0f));
 }
 
 // --------------------------------------------------------
@@ -466,6 +476,9 @@ void Game::Update(float deltaTime, float totalTime)
 
 		if (exhibits[i]->IsInExhibit(camera->GetTransform()->GetPosition())) {
 			exhibitIndex = i;
+
+			// reset values when leaving a room
+			numCels = 0;
 			break;
 		}
 	}
@@ -511,6 +524,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	for (int i = 0; i < entityList.size(); i++) {
 		entityList[i]->GetMaterial()->GetPixelShader()->SetFloat3("ambientColor",ambientColor);
 		entityList[i]->GetMaterial()->GetPixelShader()->SetData("lights", &lightList[0], sizeof(Light) * (int)lightList.size());
+		entityList[i]->GetMaterial()->GetPixelShader()->SetInt("numCels", numCels);
 		entityList[i]->Draw(context,camera);
 	}
 
@@ -520,6 +534,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		for (GameEntity* surface : *surfaces) {
 			surface->GetMaterial()->GetPixelShader()->SetFloat3("ambientColor", ambientColor);
 			surface->GetMaterial()->GetPixelShader()->SetData("lights", &lightList[0], sizeof(Light) * (int)lightList.size());
+			surface->GetMaterial()->GetPixelShader()->SetInt("numCels", numCels);
 			surface->Draw(context, camera);
 		}
 	}
@@ -536,14 +551,21 @@ void Game::Draw(float deltaTime, float totalTime)
 	//Create ImGui Window
 	ImGui::Begin("Control Panel");
 	ImGui::DragFloat(": sensitivity", &camera->mouseLookSpeed, 0.01f, 0.01f, 10.0f);
+	
+	switch (exhibitIndex) {
+		case 0:
+			ImGui::DragFloat(": brightness", &brightness, 0.01f, -1.0f, 1.0f);
+			ImGui::DragFloat(": contrast", &contrast, 0.01f, 0.0f, 10.0f);
+			break;
+		case 1:
+			ImGui::DragInt(": blur", &blur, 1, 0, 20);
+			break;
+		case 2:
+			ImGui::DragInt(": cels", &numCels, 1, 0, 6);
+			ImGui::Checkbox(": outline", &useSobel);
+			break;
+	}
 
-	if (exhibitIndex == 0) {
-		ImGui::DragFloat(": brightness", &brightness, 0.01f, -1.0f, 1.0f);
-		ImGui::DragFloat(": contrast", &contrast, 0.01f, 0.0f, 10.0f);
-	}
-	else if (exhibitIndex == 1) {
-		ImGui::DragInt(": blur", &blur, 1, 0, 20);
-	}
 	ImGui::End();
 	//Assemble Together Draw Data
 	ImGui::Render();
@@ -586,30 +608,46 @@ void Game::PostRender()
 
 	// Set up post process shaders
 	vertexShaderFull->SetShader();
-	pixelShaderSobel->SetShader();
-	pixelShaderSobel->SetShaderResourceView("image", ppSRV.Get());
-	pixelShaderSobel->SetSamplerState("samplerOptions", clampSampler.Get());
-	pixelShaderSobel->SetFloat("pixelWidth", 1.0f / width);
-	pixelShaderSobel->SetFloat("pixelHeight", 1.0f / height);
-	pixelShaderBrightCont->SetFloat("brightness", brightness);
-	pixelShaderBrightCont->SetFloat("contrast", contrast);
+	
+	switch (exhibitIndex) {
+		case 0:
+			pixelShaderBrightCont->SetShader();
+			pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
+			pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
+			pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
+			pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
+			pixelShaderBrightCont->SetFloat("brightness", brightness);
+			pixelShaderBrightCont->SetFloat("contrast", contrast);
+			pixelShaderBrightCont->CopyAllBufferData();
+			break;
+		case 1:
+			pixelShaderBlur->SetShader();
+			pixelShaderBlur->SetShaderResourceView("image", ppSRV.Get());
+			pixelShaderBlur->SetSamplerState("samplerOptions", clampSampler.Get());
+			pixelShaderBlur->SetInt("blur", blur);
+			pixelShaderBlur->SetFloat("pixelWidth", 1.0f / width);
+			pixelShaderBlur->SetFloat("pixelHeight", 1.0f / height);
+			pixelShaderBlur->CopyAllBufferData();
+			break;
 
-	if (exhibitIndex == 0) {
-		pixelShaderBrightCont->SetShader();
-		pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
-		pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
-		pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
-		pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
-		pixelShaderBrightCont->CopyAllBufferData();
-	}
-	else if (exhibitIndex == 1) {
-		pixelShaderBlur->SetShader();
-		pixelShaderBlur->SetShaderResourceView("image", ppSRV.Get());
-		pixelShaderBlur->SetSamplerState("samplerOptions", clampSampler.Get());
-		pixelShaderBlur->SetInt("blur", blur);
-		pixelShaderBlur->SetFloat("pixelWidth", 1.0f / width);
-		pixelShaderBlur->SetFloat("pixelHeight", 1.0f / height);
-		pixelShaderBlur->CopyAllBufferData();
+		case 2:
+			if (useSobel) {
+				pixelShaderSobel->SetShader();
+				pixelShaderSobel->SetShaderResourceView("image", ppSRV.Get());
+				pixelShaderSobel->SetSamplerState("samplerOptions", clampSampler.Get());
+				pixelShaderSobel->SetFloat("pixelWidth", 1.0f / width);
+				pixelShaderSobel->SetFloat("pixelHeight", 1.0f / height);
+				pixelShaderSobel->CopyAllBufferData();
+			} else {
+				// use normal post process
+				pixelShaderBrightCont->SetShader();
+				pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
+				pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
+				pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
+				pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
+				pixelShaderBrightCont->CopyAllBufferData();
+			}
+			break;
 	}
 
 	// Draw 3 vertices

@@ -38,8 +38,8 @@ void Camera::Update(float dt)
 	if (transform.GetPosition().y < 1) {
 		transform.SetPosition(transform.GetPosition().x, 1, transform.GetPosition().z);
 	}
-	else if (transform.GetPosition().y > 12) {
-		transform.SetPosition(transform.GetPosition().x, 12, transform.GetPosition().z);
+	else if (transform.GetPosition().y > 20) {
+		transform.SetPosition(transform.GetPosition().x, 20, transform.GetPosition().z);
 	}
 
 	// Calculate how much the cursor changed

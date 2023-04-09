@@ -67,14 +67,17 @@ private:
 
 	int exhibitIndex;
 
-	//Exhibit 1
+	//Exhibit 0
 	SimplePixelShader* pixelShaderBrightCont;//shader that effects brightness and contrast in post processing
 	float brightness;
 	float contrast;
 
-	//Exhibit 2
+	//Exhibit 1
 	SimplePixelShader* pixelShaderBlur; //shader that effects blur in post processing
 	int blur; // number of pixels to average outward from the current pixel
+
+	// Exhibit 2
+	bool useSobel;
 
 	//my models
 	Mesh* cube;
@@ -100,6 +103,7 @@ private:
 	//lighting
 	DirectX::XMFLOAT3 ambientColor;
 	std::vector<Light> lightList = {};
+	int numCels; // for cel shading, 0 denotes regular shading
 
 	//sky 
 	Sky* sky;

@@ -14,6 +14,7 @@ cbuffer ExternalData : register(b0)
 	float3 colorTint;
 	float roughness;
 	float3 ambientColor;
+	int numCels;
 	float3 cameraPosition;
 	Light lights[5];
 }
@@ -59,6 +60,11 @@ float4 main(VertexToPixel input) : SV_TARGET
 		else if (lights[i].Type == 1) {
 			totalLight+= PointLight(lights[i], input.normal, input.worldPosition, cameraPosition, roughness, metalness, surfaceColor, specularColor);
 		}
+	}
+
+	// for cel-shading, round total light to certain values
+	if(numCels > 0) {
+		totalLight = floor(totalLight * numCels) / numCels;
 	}
 
 	return float4(pow(totalLight+ambientTerm,1.0f/2.2f), 1);

@@ -64,7 +64,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// for cel-shading, round total light to certain values
 	if(numCels > 0) {
-		totalLight = floor(totalLight * numCels) / numCels;
+		totalLight = round(totalLight * numCels) / numCels;
 	}
 
 	return float4(pow(totalLight+ambientTerm,1.0f/2.2f), 1);

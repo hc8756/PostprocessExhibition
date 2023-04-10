@@ -149,10 +149,10 @@ void Exhibit::CheckCollisions(Camera* camera)
 		XMFLOAT3 wallPos = wall->GetTransform()->GetPosition();
 		XMFLOAT3 wallScale = wall->GetTransform()->GetScale();
 
-		if (camPos.x < wallPos.x - wallScale.x / 2 - extraWidth
-			|| camPos.x > wallPos.x + wallScale.x / 2 + extraWidth
-			|| camPos.z < wallPos.z - wallScale.z / 2 - extraWidth
-			|| camPos.z > wallPos.z + wallScale.z / 2 + extraWidth
+		if (camPos.x <= wallPos.x - wallScale.x / 2 - extraWidth
+			|| camPos.x >= wallPos.x + wallScale.x / 2 + extraWidth
+			|| camPos.z <= wallPos.z - wallScale.z / 2 - extraWidth
+			|| camPos.z >= wallPos.z + wallScale.z / 2 + extraWidth
 		) {
 			continue; // outside the wall
 		}
@@ -160,15 +160,19 @@ void Exhibit::CheckCollisions(Camera* camera)
 		// shift away from wall. Assumes camera moves slow enough to never actually make it inside the wall
 		if (camPos.x < wallPos.x - wallScale.x / 2) {
 			camera->GetTransform()->SetPosition(wallPos.x - wallScale.x / 2 - extraWidth, camPos.y, camPos.z);
+			printf(i + "shifted x neg\n");
 		}
 		else if (camPos.x > wallPos.x + wallScale.x / 2) {
 			camera->GetTransform()->SetPosition(wallPos.x + wallScale.x / 2 + extraWidth, camPos.y, camPos.z);
+			printf(i + "shifted x pos\n");
 		}
 		else if (camPos.z < wallPos.z - wallScale.z / 2) {
 			camera->GetTransform()->SetPosition(camPos.x, camPos.y, wallPos.z - wallScale.z / 2 - extraWidth);
+			printf(i + "shifted y neg\n");
 		}
 		else if (camPos.z > wallPos.z + wallScale.z / 2) {
 			camera->GetTransform()->SetPosition(camPos.x, camPos.y, wallPos.z + wallScale.z / 2 + extraWidth);
+			printf(i + "shifted y pos\n");
 		}
 	}
 }

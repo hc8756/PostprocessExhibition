@@ -32,7 +32,7 @@ Game::Game(HINSTANCE hInstance)
 		true)			   // Show extra stats (fps) in title bar?
 {
 	camera = 0;
-	ambientColor= XMFLOAT3(0.2f, 0.2f, 0.2f);
+	ambientColor= XMFLOAT3(0.1f, 0.1f, 0.1f);
 	//Set up exhibit variables
 	exhibitIndex = 0;
 	brightness = 0.0f;
@@ -198,7 +198,7 @@ void Game::Init()
 	directionalLight1.Type = 0;
 	directionalLight1.Direction= XMFLOAT3(1.0f, 0.0f, 0.0f);
 	directionalLight1.Color= XMFLOAT3(0.1f, 0.1f, 0.1f);
-	directionalLight1.Intensity = 10.0f;
+	directionalLight1.Intensity = 3.0f;
 	//add entities to the entitiy list
 	lightList.push_back(directionalLight1);
 
@@ -555,7 +555,7 @@ void Game::Draw(float deltaTime, float totalTime)
 			ImGui::DragInt(": blur", &blur, 1, 0, 20);
 			break;
 		case 2:
-			ImGui::DragInt(": cels", &numCels, 1, 0, 6);
+			ImGui::SliderInt(": cels", &numCels, 0, 6);
 			ImGui::Checkbox(": outline", &useSobel);
 			break;
 	}

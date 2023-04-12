@@ -1,4 +1,2 @@
-﻿  Exhibit.cpp
-SimpleShader.obj : warning LNK4204: 'D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\vc143.pdb' is missing debugging information for referencing module; linking object as if no debug info
-Mesh.obj : warning LNK4204: 'D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\vc143.pdb' is missing debugging information for referencing module; linking object as if no debug info
+﻿  compilation object save succeeded; see D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\PixelShader.cso
   DX11Starter.vcxproj -> D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\DX11Starter.exe

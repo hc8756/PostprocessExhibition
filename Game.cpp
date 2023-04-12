@@ -186,12 +186,6 @@ void Game::Init()
 		L"../../Assets/Textures/cobblestone/cobblestone_metal.png"
 	);
 
-	//Create entities
-	;
-
-	//move model entities around so that they don't overlap
-	
-
 	//create camera 
 	camera = new Camera(0, 0, -10, 10.0f, 0.2f, XM_PIDIV4, (float)width / height);
 

@@ -36,7 +36,7 @@ Game::Game(HINSTANCE hInstance)
 		shadowProjectionSize(10.0f)
 {
 	camera = 0;
-	ambientColor= XMFLOAT3(0.2f, 0.2f, 0.2f);
+	ambientColor= XMFLOAT3(0.1f, 0.1f, 0.1f);
 	//Set up exhibit variables
 	exhibitIndex = 0;
 	brightness = 0.0f;
@@ -205,12 +205,6 @@ void Game::Init()
 		L"../../Assets/Textures/cobblestone/cobblestone_roughness.png",
 		L"../../Assets/Textures/cobblestone/cobblestone_metal.png"
 	);
-
-	//Create entities
-	;
-
-	//move model entities around so that they don't overlap
-	
 
 	//create camera 
 	camera = new Camera(0, 0, -10, 10.0f, 0.2f, XM_PIDIV4, (float)width / height);
@@ -690,7 +684,7 @@ void Game::Draw(float deltaTime, float totalTime)
 			ImGui::DragInt(": blur", &blur, 1, 0, 20);
 			break;
 		case 2:
-			ImGui::DragInt(": cels", &numCels, 1, 0, 6);
+			ImGui::SliderInt(": cels", &numCels, 0, 6);
 			ImGui::Checkbox(": outline", &useSobel);
 			break;
 		case 3:

@@ -347,3 +347,12 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+x64/Debug/DX11Starter.ilk
+x64/Debug/DX11Starter.log
+x64/Debug/DX11Starter.pdb
+x64/Debug/DX11Starter.tlog/CL.command.1.tlog
+x64/Debug/DX11Starter.tlog/CL.read.1.tlog
+x64/Debug/DX11Starter.tlog/CL.write.1.tlog
+x64/Debug/Game.obj
+x64/Debug/Main.obj
+x64/Debug/PixelShader.cso

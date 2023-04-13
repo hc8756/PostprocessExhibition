@@ -172,4 +172,3 @@ private:
 		const wchar_t* front,
 		const wchar_t* back);
 };
-

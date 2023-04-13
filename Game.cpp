@@ -218,7 +218,7 @@ void Game::Init()
 	directionalLight1.Type = 0;
 	directionalLight1.Direction= XMFLOAT3(1.0f, 0.0f, 0.0f);
 	directionalLight1.Color= XMFLOAT3(0.1f, 0.1f, 0.1f);
-	directionalLight1.Intensity = 10.0f;
+	directionalLight1.Intensity = 5.0f;
 	directionalLight1.CastsShadows = 1;
 	//add entities to the entitiy list
 	lightList.push_back(directionalLight1);
@@ -587,6 +587,8 @@ void Game::Update(float deltaTime, float totalTime)
 
 			// reset values when leaving a room
 			numCels = 0;
+			brightness = 0.0f;
+			contrast = 1.0f;
 			break;
 		}
 	}
@@ -699,14 +701,13 @@ void Game::Draw(float deltaTime, float totalTime)
 	}
 
 	ImGui::End();
-	//Assemble Together Draw Data
-	ImGui::Render();
-	//Render Draw Data
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	
 	//unbind shadow map
 	ID3D11ShaderResourceView* nullSRVs[16] = {};
 	context->PSSetShaderResources(0, 16, nullSRVs);
 	PostRender();
+	ImGui::Render(); //Assemble Together Draw Data
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());//Render Draw Data
 	swapChain->Present(0, 0);
 	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), depthStencilView.Get());
 }
@@ -831,6 +832,8 @@ void Game::PostRender()
 				pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
 				pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
 				pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
+				pixelShaderBrightCont->SetFloat("brightness", brightness);
+				pixelShaderBrightCont->SetFloat("contrast", contrast);
 				pixelShaderBrightCont->CopyAllBufferData();
 			}
 			break;
@@ -857,6 +860,8 @@ void Game::PostRender()
 				pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
 				pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
 				pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
+				pixelShaderBrightCont->SetFloat("brightness", brightness);
+				pixelShaderBrightCont->SetFloat("contrast", contrast);
 				pixelShaderBrightCont->CopyAllBufferData();
 			}
 			break;

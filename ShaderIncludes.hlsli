@@ -41,12 +41,17 @@ struct VertexToPixel
 	float3 normal	: NORMAL;
 	float3 tangent	:	TANGENT;
 	float3 worldPosition	: POSITION;
+	float4 posForShadow		: SHADOWPOS;
 };
 
 struct VertexToPixelSky
 {
 	float4 position  : SV_POSITION;
 	float3 sampleDir : DIRECTION;
+};
+struct VertexToPixel_Shadow
+{
+	float4 screenPosition	: SV_POSITION;
 };
 
 struct Light {
@@ -57,6 +62,7 @@ struct Light {
 	float Intensity;
 	float3 Color;
 	float SpotFalloff;
+	int		CastsShadows;
 	float3 Padding;
 };
 
@@ -190,4 +196,6 @@ float3 PointLight(Light light, float3 normal, float3 worldPos, float3 camPos, fl
 	// Combine the final diffuse and specular values for this light
 	return (balancedDiff * surfaceColor + specularTerm) * light.Intensity * light.Color;
 }
+
+
 #endif

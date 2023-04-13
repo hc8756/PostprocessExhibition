@@ -39,6 +39,8 @@ private:
 	void LoadShaders(); 
 	void CreateBasicGeometry();
 	void ResizePostProcessResources();
+	void CreateShadowMapResources();
+	void RenderShadowMap();
 	Material* CreateMaterial(const wchar_t* albedoPath, const wchar_t* normalsPath, const wchar_t* roughnessPath, const wchar_t* metalPath); // use nullptr for defaults
 	Material* CreateColorMaterial(XMFLOAT3 color);
 
@@ -58,6 +60,7 @@ private:
 	// Shaders and shader-related constructs
 	SimplePixelShader* pixelShader;
 	SimpleVertexShader* vertexShader;
+	SimpleVertexShader* vertexShaderShadow;
 	SimplePixelShader* pixelShaderSky;
 	SimpleVertexShader* vertexShaderSky;
 	SimplePixelShader* pixelShaderSobel;
@@ -112,7 +115,7 @@ private:
 	DirectX::XMFLOAT3 defNormal;
 	DirectX::XMFLOAT2 defUV;
 
-	//lighting
+	
 	DirectX::XMFLOAT3 ambientColor;
 	std::vector<Light> lightList = {};
 	int numCels; // for cel shading, 0 denotes regular shading
@@ -130,6 +133,16 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> clampSampler;
 	void PreRender();
 	void PostRender();
+
+	// Shadow resources
+	int shadowMapResolution;
+	float shadowProjectionSize;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> shadowDSV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowSRV;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowSampler;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> shadowRasterizer;
+	DirectX::XMFLOAT4X4 shadowViewMatrix;
+	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
 
 	// Depth/normal technique
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> sceneDepthRTV;

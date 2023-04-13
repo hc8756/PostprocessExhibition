@@ -88,7 +88,7 @@ private:
 	float bloomIntensity=0.5;
 	float bloomSaturation=1.0;
 	float bloomBlurSigma=2.0;
-	float bloomBlurRadius=15.00;
+	float bloomBlurRadius=5.00;
 	float bloomBlurStepSize=0.09;
 	
 	//my models

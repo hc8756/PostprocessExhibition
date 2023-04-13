@@ -100,6 +100,9 @@ Game::~Game()
 	delete pixelShaderBlur;
 	pixelShaderBlur = nullptr;
 
+	delete pixelShaderBloomE;
+	pixelShaderBloomE = nullptr;
+
 	delete vertexShaderFull;
 	vertexShaderFull = nullptr;
 
@@ -589,7 +592,7 @@ void Game::Draw(float deltaTime, float totalTime)
 			ImGui::DragFloat(": bloom intensity", &bloomIntensity, 0.01f, 0.5f, 2.0f);
 			ImGui::DragFloat(": bloom saturation", &bloomSaturation, 0.01f, 0.5f, 1.0f);
 			ImGui::DragFloat(": bloom blur sigma", &bloomBlurSigma, 0.01f, 0.5f, 2.0f);
-			ImGui::DragFloat(": bloom blur radius", &bloomBlurRadius, 0.01f, 5.0f, 15.0f);
+			ImGui::DragFloat(": bloom blur radius", &bloomBlurRadius, 0.01f, 1.0f, 7.0f);
 			ImGui::DragFloat(": bloom blur step size", &bloomBlurStepSize, 0.01f, 0.0f, 2.0f);
 			break;
 	}
@@ -687,6 +690,8 @@ void Game::PostRender()
 				pixelShaderBloomE->SetFloat("bloomBlurSigma", bloomBlurSigma);
 				pixelShaderBloomE->SetFloat("bloomBlurRadius", bloomBlurRadius);
 				pixelShaderBloomE->SetFloat("bloomBlurStepSize", bloomBlurStepSize);
+				pixelShaderBloomE->SetFloat("pixelWidth", 1.0f / width);
+				pixelShaderBloomE->SetFloat("pixelHeight", 1.0f / height);
 				pixelShaderBloomE->CopyAllBufferData();
 				
 			}

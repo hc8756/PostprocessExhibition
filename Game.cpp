@@ -288,9 +288,6 @@ void Game::Init()
 	entityList.push_back(cyanSphere);
 	exhibits[0]->PlaceObject(cyanSphere, XMFLOAT3(-3, 5, 3));
 
-	
-
-
 	// blur exhibit
 	exhibits.push_back(new Exhibit(20));
 	exhibits[1]->AttachTo(exhibits[0], POSX);
@@ -347,7 +344,7 @@ void Game::CreateShadowMapResources()
 {
 	// Create shadow requirements ------------------------------------------
 	shadowMapResolution = 1024;
-	shadowProjectionSize = 10.0f;
+	shadowProjectionSize = 50.0f;
 
 	// Create the actual texture that will be the shadow map
 	D3D11_TEXTURE2D_DESC shadowDesc = {};
@@ -407,8 +404,8 @@ void Game::CreateShadowMapResources()
 
 	// View
 	XMMATRIX shView = XMMatrixLookAtLH(
-		XMVectorSet(-3, 0, 0, 0),
-		XMVectorSet(0, 0, 0, 0),
+		XMVectorSet(-5, 0, 0, 0),
+		XMVectorSet(5, 0, 0, 0),
 		XMVectorSet(0, 1, 0, 0));
 	XMStoreFloat4x4(&shadowViewMatrix, shView);
 

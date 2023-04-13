@@ -54,6 +54,7 @@ struct VertexToPixel_Shadow
 	float4 screenPosition	: SV_POSITION;
 };
 
+
 struct Light {
 	int Type;
 	float3 Direction;

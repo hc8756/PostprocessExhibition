@@ -1,4 +1,3 @@
-﻿C:\Users\onlya\Desktop\IGME750\750project\PixelShaderBloomE.hlsl(51,14): warning X3078: 'i': loop control variable conflicts with a previous declaration in the outer scope; most recent declaration will be used
-  
-  compilation object save succeeded; see C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShaderBloomE.cso
+﻿  Game.cpp
+C:\Users\onlya\Desktop\IGME750\750project\Game.h(95,8): warning C4305: 'initializing': truncation from 'double' to 'float'
   DX11Starter.vcxproj -> C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\DX11Starter.exe

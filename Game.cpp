@@ -119,10 +119,19 @@ void Game::Init()
 	LoadShaders();
 	CreateBasicGeometry();
 	ResizePostProcessResources();
+	D3D11_SAMPLER_DESC ppSampDesc = {};
+	ppSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ppSampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ppSampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ppSampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	ppSampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	device->CreateSamplerState(&ppSampDesc, ppSampler.GetAddressOf());
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// Set up sprite batch and sprite font
+	spriteBatch = std::make_unique<SpriteBatch>(context.Get());
 
 	//Textures
 	//create and zero out a local sampler desc variable
@@ -267,6 +276,8 @@ void Game::Init()
 	entityList.push_back(cyanSphere);
 	exhibits[0]->PlaceObject(cyanSphere, XMFLOAT3(-3, 5, 3));
 
+	
+
 
 	// blur exhibit
 	exhibits.push_back(new Exhibit(20));
@@ -310,6 +321,14 @@ void Game::Init()
 	statue->GetTransform()->SetRotation(XM_PIDIV2, -XM_PIDIV2, 0);
 	entityList.push_back(statue);
 	exhibits[2]->PlaceObject(statue, XMFLOAT3(0.0f, 0.0f, 0.0f));
+
+	// bloom & emmisive
+	exhibits.push_back(new Exhibit(25));
+	exhibits[3]->AttachTo(exhibits[0], NEGZ);
+	GameEntity* bloomSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 0.0f, 2.55f)));
+	entityList.push_back(bloomSphere);
+	exhibits[3]->PlaceObject(bloomSphere, XMFLOAT3(1.0f, 5.0f, 0.0f));
+
 }
 
 // --------------------------------------------------------
@@ -330,6 +349,7 @@ void Game::LoadShaders()
 	pixelShaderSobel = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderSobel.cso").c_str());
 	pixelShaderBrightCont = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderBrightCont.cso").c_str());
 	pixelShaderBlur = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderBlur.cso").c_str());
+	pixelShaderBloomE= new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderBloomE.cso").c_str());
 }
 
 void Game::CreateBasicGeometry()
@@ -402,6 +422,7 @@ void Game::ResizePostProcessResources()
 	device->CreateShaderResourceView(sceneDepthsTexture.Get(), 0, sceneDepthSRV.GetAddressOf());
 }
 
+
 Material* Game::CreateMaterial(const wchar_t* albedoPath, const wchar_t* normalsPath, const wchar_t* roughnessPath, const wchar_t* metalPath)
 {
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> albedoSRV;
@@ -435,7 +456,6 @@ Material* Game::CreateMaterial(const wchar_t* albedoPath, const wchar_t* normals
 	material->AddTextureSRV("NormalMap", normalSRV);
 	material->AddTextureSRV("RoughnessMap", roughnessSRV);
 	material->AddTextureSRV("MetalnessMap", metalSRV);
-
 	materialList.push_back(material);
 	return material;
 }
@@ -448,7 +468,6 @@ Material* Game::CreateColorMaterial(XMFLOAT3 color)
 	material->AddTextureSRV("NormalMap", defaultNormalSRV);
 	material->AddTextureSRV("RoughnessMap", defaultBlackSRV);
 	material->AddTextureSRV("MetalnessMap", defaultBlackSRV);
-
 	materialList.push_back(material);
 	return material;
 }
@@ -564,6 +583,15 @@ void Game::Draw(float deltaTime, float totalTime)
 			ImGui::DragInt(": cels", &numCels, 1, 0, 6);
 			ImGui::Checkbox(": outline", &useSobel);
 			break;
+		case 3:
+			ImGui::Checkbox(": bloom", &useBloom);
+			ImGui::DragFloat(": bloom threshold", &bloomThreshold, 0.01f, 0.5f, 1.0f);
+			ImGui::DragFloat(": bloom intensity", &bloomIntensity, 0.01f, 0.5f, 2.0f);
+			ImGui::DragFloat(": bloom saturation", &bloomSaturation, 0.01f, 0.5f, 1.0f);
+			ImGui::DragFloat(": bloom blur sigma", &bloomBlurSigma, 0.01f, 0.5f, 2.0f);
+			ImGui::DragFloat(": bloom blur radius", &bloomBlurRadius, 0.01f, 5.0f, 15.0f);
+			ImGui::DragFloat(": bloom blur step size", &bloomBlurStepSize, 0.01f, 0.0f, 2.0f);
+			break;
 	}
 
 	ImGui::End();
@@ -639,6 +667,30 @@ void Game::PostRender()
 				pixelShaderSobel->SetFloat("pixelHeight", 1.0f / height);
 				pixelShaderSobel->CopyAllBufferData();
 			} else {
+				// use normal post process
+				pixelShaderBrightCont->SetShader();
+				pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
+				pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
+				pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
+				pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
+				pixelShaderBrightCont->CopyAllBufferData();
+			}
+			break;
+		case 3:
+			if (useBloom) {
+				pixelShaderBloomE->SetShader();
+				pixelShaderBloomE->SetShaderResourceView("pixels", ppSRV.Get()); // IMPORTANT: This step takes the original post process texture!
+				pixelShaderBloomE->SetSamplerState("samplerOptions", clampSampler.Get());
+				pixelShaderBloomE->SetFloat("bloomThreshold", bloomThreshold);
+				pixelShaderBloomE->SetFloat("bloomIntensity", bloomIntensity);
+				pixelShaderBloomE->SetFloat("bloomSaturation", bloomSaturation);
+				pixelShaderBloomE->SetFloat("bloomBlurSigma", bloomBlurSigma);
+				pixelShaderBloomE->SetFloat("bloomBlurRadius", bloomBlurRadius);
+				pixelShaderBloomE->SetFloat("bloomBlurStepSize", bloomBlurStepSize);
+				pixelShaderBloomE->CopyAllBufferData();
+				
+			}
+			else {
 				// use normal post process
 				pixelShaderBrightCont->SetShader();
 				pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());

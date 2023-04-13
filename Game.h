@@ -14,6 +14,7 @@
 #include "Exhibit.h"
 #include <stdlib.h>
 #include <optional>
+#include "SpriteBatch.h"
 
 
 class Game 
@@ -28,6 +29,7 @@ public:
 	// will be called automatically
 	void Init();
 	void OnResize();
+
 	void Update(float deltaTime, float totalTime);
 	void Draw(float deltaTime, float totalTime);
 
@@ -60,6 +62,7 @@ private:
 	SimpleVertexShader* vertexShaderSky;
 	SimplePixelShader* pixelShaderSobel;
 	SimpleVertexShader* vertexShaderFull;
+	SimplePixelShader* pixelShaderBloomE;
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultBlackSRV; // default for metal and roughness
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultNormalSRV;
@@ -79,6 +82,15 @@ private:
 	// Exhibit 2
 	bool useSobel;
 
+	// Exhibit 3
+	bool useBloom=0;
+	float bloomThreshold=1.0;
+	float bloomIntensity=0.5;
+	float bloomSaturation=1.0;
+	float bloomBlurSigma=2.0;
+	float bloomBlurRadius=15.00;
+	float bloomBlurStepSize=0.09;
+	
 	//my models
 	Mesh* cube;
 	Mesh* sphere;
@@ -104,14 +116,16 @@ private:
 	DirectX::XMFLOAT3 ambientColor;
 	std::vector<Light> lightList = {};
 	int numCels; // for cel shading, 0 denotes regular shading
-
 	//sky 
 	Sky* sky;
+
+	//Sprite batch resources
+	std::shared_ptr<DirectX::SpriteBatch> spriteBatch;
 
 	// General post processing resources
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> ppRTV;		// Allows us to render to a texture
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> ppSRV;		// Allows us to sample from the same texture
-
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> ppSampler;
 	// Outline rendering --------------------------
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> clampSampler;
 	void PreRender();

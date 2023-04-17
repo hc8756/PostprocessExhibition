@@ -16,6 +16,15 @@
 #include <optional>
 #include "SpriteBatch.h"
 
+const int NUM_EXHIBITS = 6;
+enum Exhbit {
+	Intro = 0,
+	BrightContrast,
+	Blur,
+	CelShading,
+	Bloom,
+	Everything
+};
 
 class Game 
 	: public DXCore
@@ -101,7 +110,8 @@ private:
 
 	//my game entities
 	std::vector<GameEntity*> entityList = {};
-	std::vector<Exhibit*> exhibits = {};
+	//std::vector<Exhibit*> exhibits;
+	Exhibit* exhibits[NUM_EXHIBITS];
 
 	//my materials
 	std::vector<Material*> materialList = {};

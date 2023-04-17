@@ -236,55 +236,48 @@ void Game::Init()
 		nullptr
 	);
 
+	// intro exhibit
+	exhibits[Intro] = new Exhibit(25);
+
 	// brightness contrast exhibit
-	/*GameEntity* earth = new GameEntity(sphere, material1);
-	entityList.push_back(earth);
-	earth->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
-	earth->GetTransform()->SetScale(1.0f, 1.0f, 1.0f);
-
-	GameEntity* moon = new GameEntity(sphere, material2);
-	entityList.push_back(moon);
-	moon->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
-	moon->GetTransform()->SetScale(0.25f, 0.25f, 0.25f);*/ 
-	//exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
-
-	exhibits.push_back(new Exhibit(25));
+	exhibits[BrightContrast] = new Exhibit(30);
+	exhibits[BrightContrast]->AttachTo(exhibits[Intro], POSZ);
 
 	GameEntity* redSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 0.0f, 0.0f)));
 	entityList.push_back(redSphere);
-	exhibits[0]->PlaceObject(redSphere, XMFLOAT3(5, 2, -5));
+	exhibits[BrightContrast]->PlaceObject(redSphere, XMFLOAT3(5, 2, -5));
 
 	GameEntity* greenSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 2.55f, 0.0f)));
 	entityList.push_back(greenSphere);
-	exhibits[0]->PlaceObject(greenSphere, XMFLOAT3(-5, 2, -5));
+	exhibits[BrightContrast]->PlaceObject(greenSphere, XMFLOAT3(-5, 2, -5));
 
 	GameEntity* blueSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 0.0f, 2.55f)));
 	entityList.push_back(blueSphere);
-	exhibits[0]->PlaceObject(blueSphere, XMFLOAT3(5, 2, 5));
+	exhibits[BrightContrast]->PlaceObject(blueSphere, XMFLOAT3(5, 2, 5));
 
 	GameEntity* blackSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 0.0f, 0.0f)));
 	entityList.push_back(blackSphere);
-	exhibits[0]->PlaceObject(blackSphere, XMFLOAT3(-5, 2, 5));
+	exhibits[BrightContrast]->PlaceObject(blackSphere, XMFLOAT3(-5, 2, 5));
 
 	GameEntity* whiteSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 2.55f, 2.55f)));
 	entityList.push_back(whiteSphere);
-	exhibits[0]->PlaceObject(whiteSphere, XMFLOAT3(3, 5, -3));
+	exhibits[BrightContrast]->PlaceObject(whiteSphere, XMFLOAT3(3, 5, -3));
 
 	GameEntity* yellowSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 2.55f, 0.0f)));
 	entityList.push_back(yellowSphere);
-	exhibits[0]->PlaceObject(yellowSphere, XMFLOAT3(-3, 5, -3));
+	exhibits[BrightContrast]->PlaceObject(yellowSphere, XMFLOAT3(-3, 5, -3));
 
 	GameEntity* magentaSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 0.0f, 2.55f)));
 	entityList.push_back(magentaSphere);
-	exhibits[0]->PlaceObject(magentaSphere, XMFLOAT3(3, 5, 3));
+	exhibits[BrightContrast]->PlaceObject(magentaSphere, XMFLOAT3(3, 5, 3));
 
 	GameEntity* cyanSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 2.55f, 2.55f)));
 	entityList.push_back(cyanSphere);
-	exhibits[0]->PlaceObject(cyanSphere, XMFLOAT3(-3, 5, 3));
+	exhibits[BrightContrast]->PlaceObject(cyanSphere, XMFLOAT3(-3, 5, 3));
 
 	// blur exhibit
-	exhibits.push_back(new Exhibit(20));
-	exhibits[1]->AttachTo(exhibits[0], POSX);
+	exhibits[Blur] = new Exhibit(20);
+	exhibits[Blur]->AttachTo(exhibits[BrightContrast], POSX);
 
 	Material* monaLisaMaterial = CreateMaterial(L"../../Assets/Textures/mona lisa.png", nullptr, nullptr, nullptr);
 	Material* starryNightMaterial = CreateMaterial(L"../../Assets/Textures/starry night.jpg", nullptr, nullptr, nullptr);
@@ -294,13 +287,13 @@ void Game::Init()
 	entityList.push_back(theMonaLisa);
 	theMonaLisa->GetTransform()->SetScale(1.0f, 8.0f, 6.0f);
 	theMonaLisa->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
-	exhibits[1]->PlaceObject(theMonaLisa, XMFLOAT3(0, 5.0f, -9.9f));
+	exhibits[Blur]->PlaceObject(theMonaLisa, XMFLOAT3(0, 5.0f, -9.9f));
 
 	GameEntity* starryNight = new GameEntity(cube, starryNightMaterial);
 	entityList.push_back(starryNight);
 	starryNight->GetTransform()->SetScale(1.0f, 7.0f, 10.0f);
 	starryNight->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
-	exhibits[1]->PlaceObject(starryNight, XMFLOAT3(0, 5.0f, 9.9f));
+	exhibits[Blur]->PlaceObject(starryNight, XMFLOAT3(0, 5.0f, 9.9f));
 
 	/*GameEntity* persistenceMemory = new GameEntity(cube, persistMemMaterial);
 	entityList.push_back(persistenceMemory);
@@ -309,8 +302,8 @@ void Game::Init()
 	exhibits[1]->PlaceObject(persistenceMemory, XMFLOAT3(-5, 3.0f, 0));*/
 
 	// cel shading exhibit
-	exhibits.push_back(new Exhibit(40));
-	exhibits[2]->AttachTo(exhibits[0], NEGX);
+	exhibits[CelShading] = new Exhibit(40);
+	exhibits[CelShading]->AttachTo(exhibits[BrightContrast], NEGX);
 
 	Mesh* statueMesh = new Mesh(GetFullPathTo("../../Assets/Models/statue/statue.obj").c_str(), device);
 	Material* statueMaterial = CreateMaterial(
@@ -323,15 +316,30 @@ void Game::Init()
 	statue->GetTransform()->SetScale(0.1f, 0.1f, 0.1f);
 	statue->GetTransform()->SetRotation(XM_PIDIV2, -XM_PIDIV2, 0);
 	entityList.push_back(statue);
-	exhibits[2]->PlaceObject(statue, XMFLOAT3(0.0f, 0.0f, 0.0f));
+	exhibits[CelShading]->PlaceObject(statue, XMFLOAT3(0.0f, 0.0f, 0.0f));
 
 	// bloom & emmisive
-	exhibits.push_back(new Exhibit(25));
-	exhibits[3]->AttachTo(exhibits[0], NEGZ);
+	exhibits[Bloom] = new Exhibit(25);
+	exhibits[Bloom]->AttachTo(exhibits[CelShading], POSZ);
+
 	GameEntity* bloomSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 0.0f, 2.55f)));
 	entityList.push_back(bloomSphere);
-	exhibits[3]->PlaceObject(bloomSphere, XMFLOAT3(1.0f, 5.0f, 0.0f));
+	exhibits[Bloom]->PlaceObject(bloomSphere, XMFLOAT3(1.0f, 5.0f, 0.0f));
 
+	// final exhibit
+	exhibits[Everything] = new Exhibit(25);
+	exhibits[Everything]->AttachTo(exhibits[Bloom], POSZ);
+
+	/*GameEntity* earth = new GameEntity(sphere, material1);
+	entityList.push_back(earth);
+	earth->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
+	earth->GetTransform()->SetScale(1.0f, 1.0f, 1.0f);
+
+	GameEntity* moon = new GameEntity(sphere, material2);
+	entityList.push_back(moon);
+	moon->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
+	moon->GetTransform()->SetScale(0.25f, 0.25f, 0.25f);*/
+	//exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
 }
 
 void Game::CreateShadowMapResources()
@@ -577,7 +585,7 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 
 	// check for change in exhibit
-	for (int i = 0; i < exhibits.size(); i++) {
+	for (int i = 0; i < NUM_EXHIBITS; i++) {
 		if (i == exhibitIndex) {
 			continue;
 		}

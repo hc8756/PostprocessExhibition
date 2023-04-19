@@ -686,18 +686,18 @@ void Game::Draw(float deltaTime, float totalTime)
 	ImGui::DragFloat(": sensitivity", &camera->mouseLookSpeed, 0.01f, 0.01f, 10.0f);
 	
 	switch (exhibitIndex) {
-		case 0:
+		case BrightContrast:
 			ImGui::DragFloat(": brightness", &brightness, 0.01f, -1.0f, 1.0f);
 			ImGui::DragFloat(": contrast", &contrast, 0.01f, 0.0f, 10.0f);
 			break;
-		case 1:
+		case Blur:
 			ImGui::DragInt(": blur", &blur, 1, 0, 20);
 			break;
-		case 2:
+		case CelShading:
 			ImGui::SliderInt(": cels", &numCels, 0, 6);
 			ImGui::Checkbox(": outline", &useSobel);
 			break;
-		case 3:
+		case Bloom:
 			ImGui::Checkbox(": bloom", &useBloom);
 			ImGui::DragFloat(": bloom threshold", &bloomThreshold, 0.01f, 0.5f, 1.0f);
 			ImGui::DragFloat(": bloom intensity", &bloomIntensity, 0.01f, 0.5f, 2.0f);
@@ -805,7 +805,8 @@ void Game::PostRender()
 	vertexShaderFull->SetShader();
 	
 	switch (exhibitIndex) {
-		case 0:
+		case Intro:
+			// use normal post process
 			pixelShaderBrightCont->SetShader();
 			pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
 			pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
@@ -815,7 +816,17 @@ void Game::PostRender()
 			pixelShaderBrightCont->SetFloat("contrast", contrast);
 			pixelShaderBrightCont->CopyAllBufferData();
 			break;
-		case 1:
+		case BrightContrast:
+			pixelShaderBrightCont->SetShader();
+			pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
+			pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
+			pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
+			pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
+			pixelShaderBrightCont->SetFloat("brightness", brightness);
+			pixelShaderBrightCont->SetFloat("contrast", contrast);
+			pixelShaderBrightCont->CopyAllBufferData();
+			break;
+		case Blur:
 			pixelShaderBlur->SetShader();
 			pixelShaderBlur->SetShaderResourceView("image", ppSRV.Get());
 			pixelShaderBlur->SetSamplerState("samplerOptions", clampSampler.Get());
@@ -825,7 +836,7 @@ void Game::PostRender()
 			pixelShaderBlur->CopyAllBufferData();
 			break;
 
-		case 2:
+		case CelShading:
 			if (useSobel) {
 				pixelShaderSobel->SetShader();
 				pixelShaderSobel->SetShaderResourceView("image", ppSRV.Get());
@@ -845,7 +856,7 @@ void Game::PostRender()
 				pixelShaderBrightCont->CopyAllBufferData();
 			}
 			break;
-		case 3:
+		case Bloom:
 			if (useBloom) {
 				pixelShaderBloomE->SetShader();
 				pixelShaderBloomE->SetShaderResourceView("pixels", ppSRV.Get()); // IMPORTANT: This step takes the original post process texture!

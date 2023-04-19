@@ -75,7 +75,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 		
 		//directional light
 		if (lights[i].Type == 0) {
-			totalLight+= DirectionalLight(lights[i], input.normal, input.worldPosition, cameraPosition, roughness, metalness, surfaceColor, specularColor);
+			totalLight += DirectionalLight(lights[i], input.normal, input.worldPosition, cameraPosition, roughness, metalness, surfaceColor, specularColor);
 			totalLight *= (lights[i].CastsShadows ? shadowAmount : 1.0f);
 		}
 		else if (lights[i].Type == 1) {
@@ -85,7 +85,8 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// for cel-shading, round total light to certain values
 	if(numCels > 0) {
-		totalLight = round(totalLight * numCels) / numCels;
+		float maxLight = 0.4f; // for cel shading, determine the maximum amount of light
+		totalLight = ceil(totalLight / maxLight * numCels) / numCels;
 	}
 
 	return float4(pow(totalLight+ambientTerm,1.0f/2.2f), 1);

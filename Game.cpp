@@ -306,12 +306,7 @@ void Game::Init()
 	exhibits[CelShading]->AttachTo(exhibits[BrightContrast], NEGX);
 
 	Mesh* statueMesh = new Mesh(GetFullPathTo("../../Assets/Models/statue/statue.obj").c_str(), device);
-	Material* statueMaterial = CreateMaterial(
-		L"../../Assets/Models/statue/Statue.jpg",
-		nullptr,
-		nullptr,
-		nullptr
-	);
+	Material* statueMaterial = CreateColorMaterial(XMFLOAT3(0.5f, 0.5f, 0.5f));
 	GameEntity* statue = new GameEntity(statueMesh, statueMaterial);
 	statue->GetTransform()->SetScale(0.1f, 0.1f, 0.1f);
 	statue->GetTransform()->SetRotation(XM_PIDIV2, -XM_PIDIV2, 0);

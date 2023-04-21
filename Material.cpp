@@ -6,6 +6,7 @@ Material::Material(DirectX::XMFLOAT3 ct, float r, SimplePixelShader* ps, SimpleV
 	roughness = r;
 	pixelShader = ps;
 	vertexShader = vs;
+	transparency = 1.0f;
 }
 
 Material::~Material()
@@ -40,6 +41,16 @@ void Material::SetMaterialColorTint(DirectX::XMFLOAT3 input)
 void Material::SetPixelShader(SimplePixelShader* ps)
 {
 	pixelShader = ps;
+}
+
+void Material::SetTransparency(float transparency)
+{
+	this->transparency = transparency;
+}
+
+float Material::GetTransparency()
+{
+	return transparency;
 }
 
 void Material::AddTextureSRV(std::string s, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv)

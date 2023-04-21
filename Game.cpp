@@ -281,7 +281,7 @@ void Game::Init()
 
 	Material* monaLisaMaterial = CreateMaterial(L"../../Assets/Textures/mona lisa.png", nullptr, nullptr, nullptr);
 	Material* starryNightMaterial = CreateMaterial(L"../../Assets/Textures/starry night.jpg", nullptr, nullptr, nullptr);
-	Material* persistMemMaterial = CreateMaterial(L"../../Assets/Textures/persistence memory.png", nullptr, nullptr, nullptr);
+	//Material* persistMemMaterial = CreateMaterial(L"../../Assets/Textures/persistence memory.png", nullptr, nullptr, nullptr);
 
 	GameEntity* theMonaLisa = new GameEntity(cube, monaLisaMaterial);
 	entityList.push_back(theMonaLisa);
@@ -294,6 +294,9 @@ void Game::Init()
 	starryNight->GetTransform()->SetScale(1.0f, 7.0f, 10.0f);
 	starryNight->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
 	exhibits[Blur]->PlaceObject(starryNight, XMFLOAT3(0, 5.0f, 9.9f));
+
+	ditherObjects.push_back(theMonaLisa);
+	ditherObjects.push_back(starryNight);
 
 	/*GameEntity* persistenceMemory = new GameEntity(cube, persistMemMaterial);
 	entityList.push_back(persistenceMemory);
@@ -645,6 +648,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		entityList[i]->GetMaterial()->GetPixelShader()->SetShaderResourceView("ShadowMap", shadowSRV);
 		entityList[i]->GetMaterial()->GetPixelShader()->SetSamplerState("ShadowSampler", shadowSampler);
 		entityList[i]->GetMaterial()->GetPixelShader()->SetInt("numCels", numCels);
+		entityList[i]->GetMaterial()->GetPixelShader()->SetFloat("transparency", entityList[i]->GetMaterial()->GetTransparency());
 		entityList[i]->Draw(context,camera);
 	}
 
@@ -661,6 +665,7 @@ void Game::Draw(float deltaTime, float totalTime)
 			surface->GetMaterial()->GetPixelShader()->SetInt("numCels", numCels);
 			surface->GetMaterial()->GetPixelShader()->SetShaderResourceView("ShadowMap", shadowSRV);
 			surface->GetMaterial()->GetPixelShader()->SetSamplerState("ShadowSampler", shadowSampler);
+			surface->GetMaterial()->GetPixelShader()->SetFloat("transparency", surface->GetMaterial()->GetTransparency());
 			
 			surface->Draw(context, camera);
 		}
@@ -687,6 +692,10 @@ void Game::Draw(float deltaTime, float totalTime)
 			break;
 		case Blur:
 			ImGui::DragInt(": blur", &blur, 1, 0, 20);
+			ImGui::DragFloat(": transparency", &transparency, 0.01, 0, 1);
+			for(GameEntity* entity : ditherObjects) {
+				entity->GetMaterial()->SetTransparency(transparency);
+			}
 			break;
 		case CelShading:
 			ImGui::SliderInt(": cels", &numCels, 0, 6);

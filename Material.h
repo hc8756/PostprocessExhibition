@@ -19,6 +19,8 @@ public:
 	// Setters not necessary for shaders because they are loaded once
 	void SetMaterialColorTint(DirectX::XMFLOAT3 input);
 	void SetPixelShader(SimplePixelShader* ps);
+	void SetTransparency(float transparency);
+	float GetTransparency();
 
 	//texture functions
 	void AddTextureSRV(std::string s, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv);
@@ -27,6 +29,7 @@ public:
 private:
 	DirectX::XMFLOAT3 colorTint;
 	float roughness;
+	float transparency;
 	SimplePixelShader* pixelShader;
 	SimpleVertexShader* vertexShader;
 	

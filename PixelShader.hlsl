@@ -25,6 +25,8 @@ cbuffer ExternalData : register(b0)
 	float3 colorTint;
 	float2 uvScale;
 	float2 uvOffset;
+
+	float transparency; // for dithering
 }
 
 float4 main(VertexToPixel input) : SV_TARGET
@@ -85,8 +87,16 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// for cel-shading, round total light to certain values
 	if(numCels > 0) {
-		float maxLight = 0.4f; // for cel shading, determine the maximum amount of light
+		float maxLight = 0.4f; // make cel shading look better
 		totalLight = ceil(totalLight / maxLight * numCels) / numCels;
+	}
+
+	// dither for transparency less than full
+	if (transparency < 1.0f) {
+		float pixelWidth = 0.01f;
+		if (input.uv.x % pixelWidth < pixelWidth / 2) {
+			discard;
+		}
 	}
 
 	return float4(pow(totalLight+ambientTerm,1.0f/2.2f), 1);

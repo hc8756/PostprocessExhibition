@@ -94,7 +94,11 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// dither for transparency less than full
 	if (transparency < 1.0f) {
 		float pixelWidth = 0.01f;
-		if (input.uv.x % pixelWidth < pixelWidth / 2) {
+		float offset = 0;
+		if (input.uv.y % (pixelWidth) < pixelWidth / 2) {
+			offset = pixelWidth / 2;
+		}
+		if ( (input.uv.x + offset) % pixelWidth < pixelWidth * (1 - transparency)) {
 			discard;
 		}
 	}

@@ -8,6 +8,7 @@ Texture2D NormalMap	:  register(t1);
 Texture2D RoughnessMap   :  register(t2); 
 Texture2D MetalnessMap   :  register(t3);
 Texture2D ShadowMap				: register(t4);
+Texture2D ShadowMap2				: register(t5);
 SamplerState BasicSamplerState : register(s0); // "s" registers for samplers
 SamplerComparisonState ShadowSampler	: register(s1); // special sampler for shadows
 cbuffer ExternalData : register(b0)

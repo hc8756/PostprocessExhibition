@@ -8,6 +8,7 @@ cbuffer ExternalData : register(b0)
 
 	matrix shadowView;
 	matrix shadowProjection;
+	matrix shadowProjection2;
 
 }
 

@@ -445,6 +445,7 @@ void Game::LoadShaders()
 	pixelShaderBrightCont = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderBrightCont.cso").c_str());
 	pixelShaderBlur = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderBlur.cso").c_str());
 	pixelShaderBloomE= new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderBloomE.cso").c_str());
+	pixelShaderNoPostProcess = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderNoPostProcess.cso").c_str());
 }
 
 void Game::CreateBasicGeometry()
@@ -472,7 +473,9 @@ void Game::ResizePostProcessResources()
 {
 	// Reset all resources 
 	ppRTV.Reset();
+	pp2RTV.Reset();
 	ppSRV.Reset();
+	pp2SRV.Reset();
 	sceneNormalsRTV.Reset();
 	sceneNormalsSRV.Reset();
 	sceneDepthRTV.Reset();
@@ -496,6 +499,9 @@ void Game::ResizePostProcessResources()
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> ppTexture;
 	device->CreateTexture2D(&textureDesc, 0, ppTexture.GetAddressOf());
 
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> pp2Texture;
+	device->CreateTexture2D(&textureDesc, 0, pp2Texture.GetAddressOf());
+
 	// Adjust the description for scene normals
 	textureDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> sceneNormalsTexture;
@@ -508,11 +514,13 @@ void Game::ResizePostProcessResources()
 
 	// Create the Render Target Views (null descriptions use default settings)
 	device->CreateRenderTargetView(ppTexture.Get(), 0, ppRTV.GetAddressOf());
+	device->CreateRenderTargetView(pp2Texture.Get(), 0, pp2RTV.GetAddressOf());
 	device->CreateRenderTargetView(sceneNormalsTexture.Get(), 0, sceneNormalsRTV.GetAddressOf());
 	device->CreateRenderTargetView(sceneDepthsTexture.Get(), 0, sceneDepthRTV.GetAddressOf());
 
 	// Create the Shader Resource Views (null descriptions use default settings)
 	device->CreateShaderResourceView(ppTexture.Get(), 0, ppSRV.GetAddressOf());
+	device->CreateShaderResourceView(pp2Texture.Get(), 0, pp2SRV.GetAddressOf());
 	device->CreateShaderResourceView(sceneNormalsTexture.Get(), 0, sceneNormalsSRV.GetAddressOf());
 	device->CreateShaderResourceView(sceneDepthsTexture.Get(), 0, sceneDepthSRV.GetAddressOf());
 }
@@ -653,7 +661,6 @@ void Game::Draw(float deltaTime, float totalTime)
 	}
 
 	// draw all exhibits
-	/**/
 	for (Exhibit* exhibit : exhibits) {
 		const std::vector<GameEntity*>* surfaces = exhibit->GetEntities();
 		for (GameEntity* surface : *surfaces) {
@@ -674,8 +681,6 @@ void Game::Draw(float deltaTime, float totalTime)
 	//draw sky
 	sky->Draw(context, camera);
 	
-	
-	
 	//draw ImGui elements
 	// Start the Dear ImGui frame
 	ImGui_ImplDX11_NewFrame();
@@ -685,31 +690,29 @@ void Game::Draw(float deltaTime, float totalTime)
 	ImGui::Begin("Control Panel");
 	ImGui::DragFloat(": sensitivity", &camera->mouseLookSpeed, 0.01f, 0.01f, 10.0f);
 	
-	switch (exhibitIndex) {
-		case BrightContrast:
-			ImGui::DragFloat(": brightness", &brightness, 0.01f, -1.0f, 1.0f);
-			ImGui::DragFloat(": contrast", &contrast, 0.01f, 0.0f, 10.0f);
-			break;
-		case Blur:
-			ImGui::DragInt(": blur", &blur, 1, 0, 20);
-			ImGui::DragFloat(": transparency", &transparency, 0.01, 0, 1);
-			for(GameEntity* entity : ditherObjects) {
-				entity->GetMaterial()->SetTransparency(transparency);
-			}
-			break;
-		case CelShading:
-			ImGui::SliderInt(": cels", &numCels, 0, 6);
-			ImGui::Checkbox(": outline", &useSobel);
-			break;
-		case Bloom:
-			ImGui::Checkbox(": bloom", &useBloom);
-			ImGui::DragFloat(": bloom threshold", &bloomThreshold, 0.01f, 0.5f, 1.0f);
-			ImGui::DragFloat(": bloom intensity", &bloomIntensity, 0.01f, 0.5f, 2.0f);
-			ImGui::DragFloat(": bloom saturation", &bloomSaturation, 0.01f, 0.5f, 1.0f);
-			ImGui::DragFloat(": bloom blur sigma", &bloomBlurSigma, 0.01f, 0.5f, 2.0f);
-			ImGui::DragFloat(": bloom blur radius", &bloomBlurRadius, 0.01f, 1.0f, 7.0f);
-			ImGui::DragFloat(": bloom blur step size", &bloomBlurStepSize, 0.01f, 0.0f, 2.0f);
-			break;
+	if(exhibitIndex == BrightContrast || exhibitIndex == Everything) {
+		ImGui::DragFloat(": brightness", &brightness, 0.01f, -1.0f, 1.0f);
+		ImGui::DragFloat(": contrast", &contrast, 0.01f, 0.0f, 10.0f);
+	}
+	if(exhibitIndex == Blur || exhibitIndex == Everything) {
+		ImGui::DragInt(": blur", &blur, 1, 0, 20);
+		ImGui::DragFloat(": transparency", &transparency, 0.01, 0, 1);
+		for (GameEntity* entity : ditherObjects) {
+			entity->GetMaterial()->SetTransparency(transparency);
+		}
+	}
+	if(exhibitIndex == CelShading || exhibitIndex == Everything) {
+		ImGui::SliderInt(": cels", &numCels, 0, 6);
+		ImGui::Checkbox(": outline", &useSobel);
+	}
+	if(exhibitIndex == Bloom || exhibitIndex == Everything) {
+		ImGui::Checkbox(": bloom", &useBloom);
+		ImGui::DragFloat(": bloom threshold", &bloomThreshold, 0.01f, 0.5f, 1.0f);
+		ImGui::DragFloat(": bloom intensity", &bloomIntensity, 0.01f, 0.5f, 2.0f);
+		ImGui::DragFloat(": bloom saturation", &bloomSaturation, 0.01f, 0.5f, 1.0f);
+		ImGui::DragFloat(": bloom blur sigma", &bloomBlurSigma, 0.01f, 0.5f, 2.0f);
+		ImGui::DragFloat(": bloom blur radius", &bloomBlurRadius, 0.01f, 1.0f, 7.0f);
+		ImGui::DragFloat(": bloom blur step size", &bloomBlurStepSize, 0.01f, 0.0f, 2.0f);
 	}
 
 	ImGui::End();
@@ -735,6 +738,7 @@ void Game::PreRender()
 	RenderShadowMap();
 	// Clear all render targets
 	context->ClearRenderTargetView(ppRTV.Get(), color);
+	context->ClearRenderTargetView(pp2RTV.Get(), color);
 	context->ClearRenderTargetView(sceneNormalsRTV.Get(), color);
 	context->ClearRenderTargetView(sceneDepthRTV.Get(), color);
 
@@ -802,68 +806,83 @@ void Game::RenderShadowMap()
 
 void Game::PostRender()
 {
-
-	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), 0);
-
-	// Set up post process shaders
 	vertexShaderFull->SetShader();
-	
-	switch (exhibitIndex) {
-		case Intro:
-			// use normal post process
-			pixelShaderBrightCont->SetShader();
-			pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
-			pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
-			pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
-			pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
-			pixelShaderBrightCont->SetFloat("brightness", brightness);
-			pixelShaderBrightCont->SetFloat("contrast", contrast);
-			pixelShaderBrightCont->CopyAllBufferData();
-			break;
-		case BrightContrast:
-			pixelShaderBrightCont->SetShader();
-			pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
-			pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
-			pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
-			pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
-			pixelShaderBrightCont->SetFloat("brightness", brightness);
-			pixelShaderBrightCont->SetFloat("contrast", contrast);
-			pixelShaderBrightCont->CopyAllBufferData();
-			break;
-		case Blur:
-			pixelShaderBlur->SetShader();
-			pixelShaderBlur->SetShaderResourceView("image", ppSRV.Get());
-			pixelShaderBlur->SetSamplerState("samplerOptions", clampSampler.Get());
-			pixelShaderBlur->SetInt("blur", blur);
-			pixelShaderBlur->SetFloat("pixelWidth", 1.0f / width);
-			pixelShaderBlur->SetFloat("pixelHeight", 1.0f / height);
-			pixelShaderBlur->CopyAllBufferData();
-			break;
 
-		case CelShading:
-			if (useSobel) {
+	// rendered screen starts in ppRTV
+	std::vector<ExhbitType> postProcesses;
+
+	// show that the system can work with any combination of post process shaders
+	if(useBloom && (exhibitIndex == Bloom || exhibitIndex == Everything)) {
+		postProcesses.push_back(Bloom);
+	}
+	if(exhibitIndex == BrightContrast || exhibitIndex == Everything) {
+		postProcesses.push_back(BrightContrast);
+	}
+	if(exhibitIndex == Blur || exhibitIndex == Everything) {
+		postProcesses.push_back(Blur);
+	}
+	if(useSobel && (exhibitIndex == CelShading || exhibitIndex == Everything)) {
+		postProcesses.push_back(CelShading);
+	}
+	if (postProcesses.size() <= 0) {
+		// use default post process if not using any
+		postProcesses.push_back(Intro); // using Intro to represent no post processes
+	}
+
+	for (int i = 0; i < postProcesses.size(); i++) {
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> inputImage;
+		if (i % 2 == 0) {
+			// render every other to this render target
+			inputImage = ppSRV;
+			context->OMSetRenderTargets(1, pp2RTV.GetAddressOf(), 0);
+		} else {
+			inputImage = pp2SRV;
+			context->OMSetRenderTargets(1, ppRTV.GetAddressOf(), 0);
+		}
+
+		// render the last one to the back buffer
+		if (i == postProcesses.size() - 1) {
+			context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), 0);
+		}
+		
+		switch (postProcesses[i]) {
+			case Intro:
+				// no post processes
+				pixelShaderNoPostProcess->SetShader();
+				pixelShaderBrightCont->SetShaderResourceView("image", inputImage.Get());
+				pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
+				pixelShaderBrightCont->CopyAllBufferData();
+				break;
+
+			case BrightContrast:
+				pixelShaderBrightCont->SetShader();
+				pixelShaderBrightCont->SetShaderResourceView("image", inputImage.Get());
+				pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
+				pixelShaderBrightCont->SetFloat("brightness", brightness);
+				pixelShaderBrightCont->SetFloat("contrast", contrast);
+				pixelShaderBrightCont->CopyAllBufferData();
+				break;
+
+			case Blur:
+				pixelShaderBlur->SetShader();
+				pixelShaderBlur->SetShaderResourceView("image", inputImage.Get());
+				pixelShaderBlur->SetSamplerState("samplerOptions", clampSampler.Get());
+				pixelShaderBlur->SetInt("blur", blur);
+				pixelShaderBlur->CopyAllBufferData();
+				break;
+
+			case CelShading: // sobel
 				pixelShaderSobel->SetShader();
-				pixelShaderSobel->SetShaderResourceView("image", ppSRV.Get());
+				pixelShaderSobel->SetShaderResourceView("image", inputImage.Get());
 				pixelShaderSobel->SetSamplerState("samplerOptions", clampSampler.Get());
 				pixelShaderSobel->SetFloat("pixelWidth", 1.0f / width);
 				pixelShaderSobel->SetFloat("pixelHeight", 1.0f / height);
 				pixelShaderSobel->CopyAllBufferData();
-			} else {
-				// use normal post process
-				pixelShaderBrightCont->SetShader();
-				pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
-				pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
-				pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
-				pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
-				pixelShaderBrightCont->SetFloat("brightness", brightness);
-				pixelShaderBrightCont->SetFloat("contrast", contrast);
-				pixelShaderBrightCont->CopyAllBufferData();
-			}
-			break;
-		case Bloom:
-			if (useBloom) {
+				break;
+
+			case Bloom:
 				pixelShaderBloomE->SetShader();
-				pixelShaderBloomE->SetShaderResourceView("pixels", ppSRV.Get()); // IMPORTANT: This step takes the original post process texture!
+				pixelShaderBloomE->SetShaderResourceView("pixels", inputImage.Get()); // IMPORTANT: This step takes the original post process texture!
 				pixelShaderBloomE->SetSamplerState("samplerOptions", clampSampler.Get());
 				pixelShaderBloomE->SetFloat("bloomThreshold", bloomThreshold);
 				pixelShaderBloomE->SetFloat("bloomIntensity", bloomIntensity);
@@ -874,24 +893,63 @@ void Game::PostRender()
 				pixelShaderBloomE->SetFloat("pixelWidth", 1.0f / width);
 				pixelShaderBloomE->SetFloat("pixelHeight", 1.0f / height);
 				pixelShaderBloomE->CopyAllBufferData();
-				
-			}
-			else {
-				// use normal post process
-				pixelShaderBrightCont->SetShader();
-				pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
-				pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
-				pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
-				pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
-				pixelShaderBrightCont->SetFloat("brightness", brightness);
-				pixelShaderBrightCont->SetFloat("contrast", contrast);
-				pixelShaderBrightCont->CopyAllBufferData();
-			}
-			break;
+				break;
+		}
+
+		// draw the full screen triangle
+		context->Draw(3, 0);
 	}
 
+	//if (exhibitIndex == Intro
+	//	|| (exhibitIndex == CelShading && !useSobel)
+	//	|| (exhibitIndex == Bloom && !useBloom)
+	//) {
+	//	// no post processes
+	//	pixelShaderNoPostProcess->SetShader();
+	//	pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
+	//	pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
+	//	pixelShaderBrightCont->CopyAllBufferData();
+	//}
+	//if (exhibitIndex == BrightContrast) {
+	//	pixelShaderBrightCont->SetShader();
+	//	pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
+	//	pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
+	//	pixelShaderBrightCont->SetFloat("brightness", brightness);
+	//	pixelShaderBrightCont->SetFloat("contrast", contrast);
+	//	pixelShaderBrightCont->CopyAllBufferData();
+	//}
+	//if (exhibitIndex == Blur) {
+	//	pixelShaderBlur->SetShader();
+	//	pixelShaderBlur->SetShaderResourceView("image", ppSRV.Get());
+	//	pixelShaderBlur->SetSamplerState("samplerOptions", clampSampler.Get());
+	//	pixelShaderBlur->SetInt("blur", blur);
+	//	pixelShaderBlur->CopyAllBufferData();
+	//}
+	//if (exhibitIndex == CelShading && useSobel) {
+	//	pixelShaderSobel->SetShader();
+	//	pixelShaderSobel->SetShaderResourceView("image", ppSRV.Get());
+	//	pixelShaderSobel->SetSamplerState("samplerOptions", clampSampler.Get());
+	//	pixelShaderSobel->SetFloat("pixelWidth", 1.0f / width);
+	//	pixelShaderSobel->SetFloat("pixelHeight", 1.0f / height);
+	//	pixelShaderSobel->CopyAllBufferData();
+	//}
+	//if(exhibitIndex == Bloom && useBloom) {
+	//	pixelShaderBloomE->SetShader();
+	//	pixelShaderBloomE->SetShaderResourceView("pixels", ppSRV.Get()); // IMPORTANT: This step takes the original post process texture!
+	//	pixelShaderBloomE->SetSamplerState("samplerOptions", clampSampler.Get());
+	//	pixelShaderBloomE->SetFloat("bloomThreshold", bloomThreshold);
+	//	pixelShaderBloomE->SetFloat("bloomIntensity", bloomIntensity);
+	//	pixelShaderBloomE->SetFloat("bloomSaturation", bloomSaturation);
+	//	pixelShaderBloomE->SetFloat("bloomBlurSigma", bloomBlurSigma);
+	//	pixelShaderBloomE->SetFloat("bloomBlurRadius", bloomBlurRadius);
+	//	pixelShaderBloomE->SetFloat("bloomBlurStepSize", bloomBlurStepSize);
+	//	pixelShaderBloomE->SetFloat("pixelWidth", 1.0f / width);
+	//	pixelShaderBloomE->SetFloat("pixelHeight", 1.0f / height);
+	//	pixelShaderBloomE->CopyAllBufferData();
+	//}
+
 	// Draw 3 vertices
-	context->Draw(3, 0);
+	//context->Draw(3, 0);
 	// Unbind shader resource views at the end of the frame
 	ID3D11ShaderResourceView* nullSRVs[128] = {};
 	context->PSSetShaderResources(0, ARRAYSIZE(nullSRVs), nullSRVs);

@@ -17,7 +17,7 @@
 #include "SpriteBatch.h"
 
 const int NUM_EXHIBITS = 6;
-enum Exhbit {
+enum ExhbitType {
 	Intro = 0,
 	BrightContrast,
 	Blur,
@@ -75,6 +75,7 @@ private:
 	SimplePixelShader* pixelShaderSobel;
 	SimpleVertexShader* vertexShaderFull;
 	SimplePixelShader* pixelShaderBloomE;
+	SimplePixelShader* pixelShaderNoPostProcess;
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultBlackSRV; // default for metal and roughness
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultNormalSRV;
@@ -141,6 +142,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> ppRTV;		// Allows us to render to a texture
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> ppSRV;		// Allows us to sample from the same texture
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> ppSampler;
+
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pp2RTV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pp2SRV;
+
 	// Outline rendering --------------------------
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> clampSampler;
 	void PreRender();

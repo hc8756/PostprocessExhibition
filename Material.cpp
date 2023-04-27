@@ -6,7 +6,7 @@ Material::Material(DirectX::XMFLOAT3 ct, float r, SimplePixelShader* ps, SimpleV
 	roughness = r;
 	pixelShader = ps;
 	vertexShader = vs;
-	transparency = 1.0f;
+	transparency = 0.0f;
 }
 
 Material::~Material()

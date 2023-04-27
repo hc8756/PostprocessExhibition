@@ -90,8 +90,8 @@ private:
 
 	//Exhibit 1
 	SimplePixelShader* pixelShaderBlur; //shader that effects blur in post processing
-	int blur; // number of pixels to average outward from the current pixel
-	float transparency = 1.0f; // used for certain objects for dithering
+	int blur; // number of pixels to average around the current pixel
+	float transparency = 0.0f; // used for certain objects for dithering
 	std::vector<GameEntity*> ditherObjects;
 
 	// Exhibit 2

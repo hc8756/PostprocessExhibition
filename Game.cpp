@@ -207,7 +207,7 @@ void Game::Init()
 	);
 
 	//create camera 
-	camera = new Camera(0, 0, -10, 10.0f, 0.2f, XM_PIDIV4, (float)width / height);
+	camera = new Camera(0, 0, -10, 15.0f, 0.2f, XM_PIDIV4, (float)width / height);
 
 	//default normal and uv values
 	defNormal = XMFLOAT3(+0.0f, +0.0f, -1.0f);
@@ -237,43 +237,29 @@ void Game::Init()
 	);
 
 	// intro exhibit
-	exhibits[Intro] = new Exhibit(25);
+	exhibits[Intro] = new Exhibit(30);
+	GameEntity* firstPillar = new GameEntity(cube, Exhibit::marble);
+	entityList.push_back(firstPillar);
+	firstPillar->GetTransform()->SetScale(5, 10, 5);
+	exhibits[Intro]->PlaceObject(firstPillar, XMFLOAT3(0, 5, 0));
+
+	GameEntity* introSign = new GameEntity(cube, 
+		CreateMaterial(L"../../Assets/Textures/signs/intro sign.png", nullptr, nullptr, nullptr)
+	);
+	entityList.push_back(introSign);
+	introSign->GetTransform()->SetScale(0.1f, 3.5f, 4.5f);
+	introSign->GetTransform()->SetRotation(0, XM_PIDIV2, 0);
+	exhibits[Intro]->PlaceObject(introSign, XMFLOAT3(0, 6, -2.5f));
 
 	// brightness contrast exhibit
-	exhibits[BrightContrast] = new Exhibit(30);
+	exhibits[BrightContrast] = new Exhibit(55);
 	exhibits[BrightContrast]->AttachTo(exhibits[Intro], POSZ);
 
-	GameEntity* redSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 0.0f, 0.0f)));
-	entityList.push_back(redSphere);
-	exhibits[BrightContrast]->PlaceObject(redSphere, XMFLOAT3(5, 2, -5));
-
-	GameEntity* greenSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 2.55f, 0.0f)));
-	entityList.push_back(greenSphere);
-	exhibits[BrightContrast]->PlaceObject(greenSphere, XMFLOAT3(-5, 2, -5));
-
-	GameEntity* blueSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 0.0f, 2.55f)));
-	entityList.push_back(blueSphere);
-	exhibits[BrightContrast]->PlaceObject(blueSphere, XMFLOAT3(5, 2, 5));
-
-	GameEntity* blackSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 0.0f, 0.0f)));
-	entityList.push_back(blackSphere);
-	exhibits[BrightContrast]->PlaceObject(blackSphere, XMFLOAT3(-5, 2, 5));
-
-	GameEntity* whiteSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 2.55f, 2.55f)));
-	entityList.push_back(whiteSphere);
-	exhibits[BrightContrast]->PlaceObject(whiteSphere, XMFLOAT3(3, 5, -3));
-
-	GameEntity* yellowSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 2.55f, 0.0f)));
-	entityList.push_back(yellowSphere);
-	exhibits[BrightContrast]->PlaceObject(yellowSphere, XMFLOAT3(-3, 5, -3));
-
-	GameEntity* magentaSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 0.0f, 2.55f)));
-	entityList.push_back(magentaSphere);
-	exhibits[BrightContrast]->PlaceObject(magentaSphere, XMFLOAT3(3, 5, 3));
-
-	GameEntity* cyanSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 2.55f, 2.55f)));
-	entityList.push_back(cyanSphere);
-	exhibits[BrightContrast]->PlaceObject(cyanSphere, XMFLOAT3(-3, 5, 3));
+	for (int i = 0; i < 100; i++) {
+		GameEntity* colorSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f * rand() / RAND_MAX, 2.55f * rand() / RAND_MAX, 2.55f * rand() / RAND_MAX)));
+		entityList.push_back(colorSphere);
+		exhibits[BrightContrast]->PlaceObject(colorSphere, XMFLOAT3(rand() % 24 - 12, 1 + rand() % 20, rand() % 24 - 12));
+	}
 
 	// blur exhibit
 	exhibits[Blur] = new Exhibit(20);
@@ -695,7 +681,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		ImGui::DragFloat(": contrast", &contrast, 0.01f, 0.0f, 10.0f);
 	}
 	if(exhibitIndex == Blur || exhibitIndex == Everything) {
-		ImGui::DragInt(": blur", &blur, 1, 0, 20);
+		ImGui::DragInt(": blur", &blur, 1, 0, 10);
 		ImGui::DragFloat(": transparency", &transparency, 0.01, 0, 1);
 		for (GameEntity* entity : ditherObjects) {
 			entity->GetMaterial()->SetTransparency(transparency);

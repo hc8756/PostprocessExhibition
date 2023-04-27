@@ -1,16 +1,14 @@
 #include "ShaderIncludes.hlsli"
-/*
-Texture2D SurfaceTexture  : register(t0); // "t" registers for textures
-Texture2D SpecularMap  : register(t1);
-Texture2D NormalMap  : register(t2);*/
-Texture2D Albedo:  register(t0); 
-Texture2D NormalMap	:  register(t1); 
+
+Texture2D Albedo		 :  register(t0); 
+Texture2D NormalMap		 :  register(t1); 
 Texture2D RoughnessMap   :  register(t2); 
 Texture2D MetalnessMap   :  register(t3);
-Texture2D ShadowMap				: register(t4);
-Texture2D ShadowMap2				: register(t5);
+Texture2D ShadowMap		 :  register(t4);
+Texture2D ShadowMap2	 :  register(t5);
 SamplerState BasicSamplerState : register(s0); // "s" registers for samplers
 SamplerComparisonState ShadowSampler	: register(s1); // special sampler for shadows
+
 cbuffer ExternalData : register(b0)
 {
 	// Scene related
@@ -61,28 +59,29 @@ float4 main(VertexToPixel input) : SV_TARGET
 	//specular
 	float3 specularColor = lerp(F0_NON_METAL.rrr, surfaceColor.rgb, metalness);
 	
-
 	// SHADOW MAPPING --------------------------------
 	// Note: This is only for a SINGLE light!  If you want multiple lights to cast shadows,
 	// you need to do all of this multiple times IN THIS SHADER.
 	float shadowAmount;
+	float shadowAmount2;
+
 	float2 shadowUV = input.posForShadow.xy / input.posForShadow.w * 0.5f + 0.5f;
 	shadowUV.y = 1.0f - shadowUV.y;
 
+	float2 shadowUV2 = input.posForShadow2.xy / input.posForShadow2.w * 0.5f + 0.5f;
+	shadowUV2.y = 1.0f - shadowUV2.y;
+
 	// Calculate this pixel's depth from the light
 	float depthFromLight = input.posForShadow.z / input.posForShadow.w;
+	float depthFromLight2 = input.posForShadow2.z / input.posForShadow2.w;
+
 	shadowAmount = ShadowMap.SampleCmpLevelZero(ShadowSampler, shadowUV, depthFromLight);
-	for (int i = 0; i < 5; i++) {
-		
-		//directional light
-		if (lights[i].Type == 0) {
-			totalLight+= DirectionalLight(lights[i], input.normal, input.worldPosition, cameraPosition, roughness, metalness, surfaceColor, specularColor);
-			totalLight *= (lights[i].CastsShadows ? shadowAmount : 1.0f);
-		}
-		else if (lights[i].Type == 1) {
-			totalLight+= PointLight(lights[i], input.normal, input.worldPosition, cameraPosition, roughness, metalness, surfaceColor, specularColor);
-		}
-	}
+	shadowAmount2 = ShadowMap2.SampleCmpLevelZero(ShadowSampler, shadowUV2, depthFromLight2);
+	shadowAmount = min(shadowAmount, shadowAmount2);
+
+	totalLight += DirectionalLight(lights[0], input.normal, input.worldPosition, cameraPosition, roughness, metalness, surfaceColor, specularColor);
+	totalLight *= (lights[0].CastsShadows ? shadowAmount: 1.0f);
+
 
 	// for cel-shading, round total light to certain values
 	if(numCels > 0) {

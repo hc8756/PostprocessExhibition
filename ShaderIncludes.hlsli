@@ -42,6 +42,7 @@ struct VertexToPixel
 	float3 tangent	:	TANGENT;
 	float3 worldPosition	: POSITION;
 	float4 posForShadow		: SHADOWPOS;
+	float4 posForShadow2		: SHADOWPOS1;
 };
 
 struct VertexToPixelSky

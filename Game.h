@@ -135,13 +135,14 @@ private:
 	void PostRender();
 
 	// Shadow map resources
+	DirectX::XMFLOAT4X4 shadowViewMatrix;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowSampler;
+	
 	int shadowMapResolution;
 	float shadowProjectionSize;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> shadowDSV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowSRV;
-	Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowSampler;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowSRV;	
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> shadowRasterizer;
-	DirectX::XMFLOAT4X4 shadowViewMatrix;
 	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
 
 	int shadowMapResolution2;

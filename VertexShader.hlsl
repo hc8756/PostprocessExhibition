@@ -25,7 +25,9 @@ VertexToPixel main( VertexShaderInput input )
 	output.worldPosition = mul(world, float4(input.position, 1.0f)).xyz;
 
 	matrix shadowWVP = mul(shadowProjection, mul(shadowView, world));
+	matrix shadowWVP2 = mul(shadowProjection2, mul(shadowView, world));
 	output.posForShadow = mul(shadowWVP, float4(input.position, 1.0f));
+	output.posForShadow2 = mul(shadowWVP2, float4(input.position, 1.0f));
 
 	return output;
 }

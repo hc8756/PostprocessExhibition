@@ -145,13 +145,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> shadowRasterizer;
 	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
 
-	int shadowMapResolution2;
-	float shadowProjectionSize2;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> shadowDSV2;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowSRV2;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState> shadowRasterizer2;
-	DirectX::XMFLOAT4X4 shadowProjectionMatrix2;
-
 	// Depth/normal technique
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> sceneDepthRTV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> sceneDepthSRV;

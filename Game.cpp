@@ -338,8 +338,8 @@ void Game::Init()
 void Game::CreateShadowMapResources()
 {
 	// Create shadow requirements ------------------------------------------
-	shadowMapResolution = 1024;
-	shadowProjectionSize = 20.0f;
+	shadowMapResolution = 1024*5;
+	shadowProjectionSize = 20.0f*5;
 
 	// Create the "camera" matrices for the shadow map rendering
 	XMMATRIX shView = XMMatrixLookAtLH(
@@ -394,8 +394,8 @@ void Game::CreateShadowMapResources()
 
 	//Do it all again
 	// Create the actual texture that will be the shadow map	
-	shadowMapResolution2 = shadowMapResolution * 5;
-	shadowProjectionSize2 = shadowProjectionSize * 5;
+	shadowMapResolution2 = shadowMapResolution;
+	shadowProjectionSize2 = shadowProjectionSize ;
 
 	D3D11_TEXTURE2D_DESC shadowDesc2 = {};
 	shadowDesc2.Width = shadowMapResolution2;

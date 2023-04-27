@@ -77,7 +77,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	shadowAmount = ShadowMap.SampleCmpLevelZero(ShadowSampler, shadowUV, depthFromLight);
 	shadowAmount2 = ShadowMap2.SampleCmpLevelZero(ShadowSampler, shadowUV2, depthFromLight2);
-	shadowAmount = min(shadowAmount, shadowAmount2);
+	//shadowAmount = max(shadowAmount, shadowAmount2);
 
 	totalLight += DirectionalLight(lights[0], input.normal, input.worldPosition, cameraPosition, roughness, metalness, surfaceColor, specularColor);
 	totalLight *= (lights[0].CastsShadows ? shadowAmount: 1.0f);

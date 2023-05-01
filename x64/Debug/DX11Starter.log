@@ -1,4 +1,1 @@
-﻿  Game.cpp
-C:\Users\onlya\Desktop\IGME750\750project\Game.h(99,8): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\Users\onlya\Desktop\IGME750\750project\Game.h(105,8): warning C4305: 'initializing': truncation from 'double' to 'float'
-  DX11Starter.vcxproj -> C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\DX11Starter.exe
+﻿  DX11Starter.vcxproj -> C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\DX11Starter.exe

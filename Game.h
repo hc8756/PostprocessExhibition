@@ -103,10 +103,19 @@ private:
 	DirectX::XMFLOAT4 particleColor = XMFLOAT4(0.5f,0.5f,1.0f,1.0f);
 	DirectX::XMFLOAT3 particlesStartPos = XMFLOAT3(0.0f,1.0f,0.0f);
 	float particleSize=0.1;
+	float velocityRange = 1;
+	float lifeSpan = 10;
+	int firstDeadParticle=0;
+	int firstLiveParticle=0;
+	int particlesPerSecond=10;
+	float secondsPerParticle=1.0f/10;
+	float timeSinceEmit=0;
+
 	// Material & transform
 	Transform particleTransform;
 	// Data structure holding particles
 	int particleNum = 100;
+	int livingParticleNum=0;
 	Particle* particles;
 	ParticleVertex* particleVertices;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> particleVertexBuffer; 
@@ -116,6 +125,8 @@ private:
 	void CopyOneParticle(int index);
 	XMFLOAT3 CalcParticleVertexPos(int particleInd, int cornerInd);
 	void CopyParticlesToGPU();
+	void UpdateSingleParticle(float dt, int index);
+	void SpawnParticles();
 	//Particle rendering 
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> particleDepthState;
 	Microsoft::WRL::ComPtr<ID3D11BlendState> particleBlendState;

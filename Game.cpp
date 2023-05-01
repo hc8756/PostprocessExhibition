@@ -325,10 +325,10 @@ void Game::Init()
 	// particle exhibit
 	exhibits.push_back(new Exhibit(25));
 	exhibits[4]->AttachTo(exhibits[2], POSZ);
-	GameEntity* emitter = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 0.0f, 0.0f)));
-	entityList.push_back(emitter);
-	exhibits[4]->PlaceObject(emitter, XMFLOAT3(0.0f, 0.0f, 0.0f));
-	//particlesStartPos = emitter->GetTransform()->GetPosition();
+	particlesStartPos = exhibits[4]->origin;
+	particlesStartPos.x += 16;
+	particlesStartPos.z -= 16;
+	particlesStartPos.y += 2;
 	CreateParticles();
 }
 
@@ -433,7 +433,7 @@ void Game::CreateBasicGeometry()
 }
 
 void Game::CreateParticles() {
-
+	
 	// A depth state for the particles
 	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
 	dsDesc.DepthEnable = true;
@@ -520,10 +520,7 @@ void Game::CreateParticles() {
 	ibDesc.Usage = D3D11_USAGE_DEFAULT;
 	ibDesc.ByteWidth = sizeof(unsigned int) * particleNum * 6;
 	device->CreateBuffer(&ibDesc, &indexData, particleIndexBuffer.GetAddressOf());
-
-	delete[] indices;
-
-	
+	delete[] indices;	
 }
 
 // --------------------------------------------------------
@@ -673,16 +670,79 @@ void Game::Update(float deltaTime, float totalTime)
 	if (firstPerson) {
 		camera->Update(deltaTime);
 	}
+	
+	if (firstLiveParticle < firstDeadParticle)
+	{
+		for (int i = firstLiveParticle; i < firstDeadParticle; i++) {
+			UpdateSingleParticle(deltaTime, i);
+		}
+	}
+	else {
+		for (int i = firstLiveParticle; i < particleNum; i++){
+			UpdateSingleParticle(deltaTime, i);
+		}
 
-	//update particle locations
-	for (int i = 0; i < particleNum; i++) {
-		XMVECTOR startPos = XMLoadFloat3(&particles[i].Position);
-		XMVECTOR startVel = XMLoadFloat3(&particles[i].StartVelocity);
+		// Update second half (from 0 to first dead)
+		for (int i = 0; i < firstDeadParticle; i++){
+			UpdateSingleParticle(deltaTime,i);
+		}
+	}
+	timeSinceEmit += deltaTime;
 
-		// Use constant acceleration function
-		XMStoreFloat3(&particles[i].Position, startVel * deltaTime + startPos);
+	// Enough time to emit?
+	while (timeSinceEmit > secondsPerParticle)
+	{
+		SpawnParticles();
+		timeSinceEmit -= secondsPerParticle;
 	}
 }
+
+void Game::UpdateSingleParticle(float dt, int index)
+{
+	// Check for valid particle age before doing anything
+	if (particles[index].Age >= lifeSpan)
+		return;
+
+	// Update and check for death
+	particles[index].Age += dt;
+	if (particles[index].Age >= lifeSpan)
+	{
+		// Recent death, so retire by moving alive count
+		firstLiveParticle++;
+		firstLiveParticle %= particleNum;
+		livingParticleNum--;
+		return;
+	}
+
+	// Adjust the position
+	XMVECTOR startPos = XMLoadFloat3(&particles[index].Position);
+	XMVECTOR startVel = XMLoadFloat3(&particles[index].StartVelocity);
+
+	float t = particles[index].Age;
+
+	// Use constant acceleration function
+	XMStoreFloat3(&particles[index].Position, startVel * t + startPos);
+}
+
+void Game::SpawnParticles()
+{
+	if (livingParticleNum == particleNum)
+		return;
+
+	// Reset the first dead particle
+	particles[firstDeadParticle].Age = 0;
+	//particles[firstDeadParticle].Size = startSize;
+	//particles[firstDeadParticle].Color = startColor;
+
+	particles[firstDeadParticle].Position=particlesStartPos;
+	// Increment and wrap
+	firstDeadParticle++;
+	firstDeadParticle %= particleNum;
+
+	livingParticleNum++;
+}
+
+
 
 // --------------------------------------------------------
 // Clear the screen, redraw everything, present to the user
@@ -851,8 +911,20 @@ void Game::RenderShadowMap()
 
 void Game::CopyParticlesToGPU()
 {
-	for (int i = 0; i < particleNum; i++) {
-		CopyOneParticle(i);
+	if (firstLiveParticle < firstDeadParticle)
+	{
+		for (int i = firstLiveParticle; i < firstDeadParticle; i++)
+			CopyOneParticle(i);
+	}
+	else
+	{
+		// Update first half (from firstAlive to max particles)
+		for (int i = firstLiveParticle; i < particleNum; i++)
+			CopyOneParticle(i);
+
+		// Update second half (from 0 to first dead)
+		for (int i = 0; i < firstDeadParticle; i++)
+			CopyOneParticle(i);
 	}
 
 	D3D11_MAPPED_SUBRESOURCE mapped = {};
@@ -928,7 +1000,18 @@ void Game::DrawParticles() {
 	vertexShaderParticle->SetMatrix4x4("projection", camera->GetProjection());
 	vertexShaderParticle->CopyAllBufferData();
 	
-	context->DrawIndexed(particleNum * 6, 0, 0);
+	if (firstLiveParticle < firstDeadParticle)
+	{
+		context->DrawIndexed(livingParticleNum * 6, firstLiveParticle * 6, 0);
+	}
+	else
+	{
+		// Draw first half (0 -> dead)
+		context->DrawIndexed(firstDeadParticle * 6, 0, 0);
+
+		// Draw second half (alive -> max)
+		context->DrawIndexed((particleNum - firstLiveParticle) * 6, firstLiveParticle * 6, 0);
+	}
 
 	// Reset states
 	context->OMSetBlendState(0, 0, 0xffffffff);

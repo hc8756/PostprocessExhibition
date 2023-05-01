@@ -16,14 +16,17 @@
 #include <optional>
 #include "SpriteBatch.h"
 
-const int NUM_EXHIBITS = 6;
+const int NUM_EXHIBITS = 9;
 enum ExhbitType {
 	Intro = 0,
 	BrightContrast,
 	Blur,
 	CelShading,
 	Bloom,
-	Everything
+	Particles,
+	Everything,
+	LeftHall,
+	RightHall,
 };
 
 class Game 

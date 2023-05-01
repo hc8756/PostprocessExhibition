@@ -253,7 +253,7 @@ void Game::Init()
 
 	// brightness contrast exhibit
 	exhibits[BrightContrast] = new Exhibit(55);
-	exhibits[BrightContrast]->AttachTo(exhibits[Intro], POSZ);
+	exhibits[BrightContrast]->AttachTo(exhibits[Intro], NEGX);
 
 	for (int i = 0; i < 100; i++) {
 		GameEntity* colorSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f * rand() / RAND_MAX, 2.55f * rand() / RAND_MAX, 2.55f * rand() / RAND_MAX)));
@@ -262,8 +262,8 @@ void Game::Init()
 	}
 
 	// blur exhibit
-	exhibits[Blur] = new Exhibit(20);
-	exhibits[Blur]->AttachTo(exhibits[BrightContrast], POSX);
+	exhibits[Blur] = new Exhibit(55);
+	exhibits[Blur]->AttachTo(exhibits[Intro], POSX);
 
 	Material* monaLisaMaterial = CreateMaterial(L"../../Assets/Textures/mona lisa.png", nullptr, nullptr, nullptr);
 	Material* starryNightMaterial = CreateMaterial(L"../../Assets/Textures/starry night.jpg", nullptr, nullptr, nullptr);
@@ -290,9 +290,16 @@ void Game::Init()
 	persistenceMemory->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
 	exhibits[1]->PlaceObject(persistenceMemory, XMFLOAT3(-5, 3.0f, 0));*/
 
+	// halls
+	exhibits[LeftHall] = new Exhibit(20);
+	exhibits[LeftHall]->AttachTo(exhibits[BrightContrast], POSZ);
+
+	exhibits[RightHall] = new Exhibit(20);
+	exhibits[RightHall]->AttachTo(exhibits[Blur], POSZ);
+
 	// cel shading exhibit
 	exhibits[CelShading] = new Exhibit(40);
-	exhibits[CelShading]->AttachTo(exhibits[BrightContrast], NEGX);
+	exhibits[CelShading]->AttachTo(exhibits[LeftHall], POSZ);
 
 	Mesh* statueMesh = new Mesh(GetFullPathTo("../../Assets/Models/statue/statue.obj").c_str(), device);
 	Material* statueMaterial = CreateColorMaterial(XMFLOAT3(0.5f, 0.5f, 0.5f));
@@ -303,16 +310,21 @@ void Game::Init()
 	exhibits[CelShading]->PlaceObject(statue, XMFLOAT3(0.0f, 0.0f, 0.0f));
 
 	// bloom & emmisive
-	exhibits[Bloom] = new Exhibit(25);
-	exhibits[Bloom]->AttachTo(exhibits[CelShading], POSZ);
+	exhibits[Bloom] = new Exhibit(40);
+	exhibits[Bloom]->AttachTo(exhibits[RightHall], POSZ);
 
 	GameEntity* bloomSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 0.0f, 2.55f)));
 	entityList.push_back(bloomSphere);
 	exhibits[Bloom]->PlaceObject(bloomSphere, XMFLOAT3(1.0f, 5.0f, 0.0f));
 
+	// particles
+	exhibits[Particles] = new Exhibit(45);
+	exhibits[Particles]->AttachTo(exhibits[CelShading], POSX);
+	exhibits[Particles]->AttachTo(exhibits[Bloom], NEGX);
+
 	// final exhibit
-	exhibits[Everything] = new Exhibit(25);
-	exhibits[Everything]->AttachTo(exhibits[Bloom], POSZ);
+	exhibits[Everything] = new Exhibit(70);
+	exhibits[Everything]->AttachTo(exhibits[Particles], POSZ);
 
 	/*GameEntity* earth = new GameEntity(sphere, material1);
 	entityList.push_back(earth);

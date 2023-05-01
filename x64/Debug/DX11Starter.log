@@ -1,7 +1,7 @@
 ﻿  Game.cpp
-D:\Profiles\ejb3432\Documents\GitHub\750project\Game.h(107,25): warning C4305: 'initializing': truncation from 'double' to 'float'
+D:\Profiles\ejb3432\Documents\GitHub\750project\Game.h(110,25): warning C4305: 'initializing': truncation from 'double' to 'float'
 D:\Profiles\ejb3432\Documents\GitHub\750project\Game.cpp(261,110): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 D:\Profiles\ejb3432\Documents\GitHub\750project\Game.cpp(261,83): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
 D:\Profiles\ejb3432\Documents\GitHub\750project\Game.cpp(261,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-D:\Profiles\ejb3432\Documents\GitHub\750project\Game.cpp(685,63): warning C4305: 'argument': truncation from 'double' to 'float'
+D:\Profiles\ejb3432\Documents\GitHub\750project\Game.cpp(697,63): warning C4305: 'argument': truncation from 'double' to 'float'
   DX11Starter.vcxproj -> D:\Profiles\ejb3432\Documents\GitHub\750project\x64\Debug\DX11Starter.exe

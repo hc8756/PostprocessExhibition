@@ -681,7 +681,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		ImGui::DragFloat(": contrast", &contrast, 0.01f, 0.0f, 10.0f);
 	}
 	if(exhibitIndex == Blur || exhibitIndex == Everything) {
-		ImGui::DragInt(": blur", &blur, 1, 0, 10);
+		ImGui::DragInt(": blur", &blur, 1, 0, 50);
 		ImGui::DragFloat(": transparency", &transparency, 0.01, 0, 1);
 		for (GameEntity* entity : ditherObjects) {
 			entity->GetMaterial()->SetTransparency(transparency);

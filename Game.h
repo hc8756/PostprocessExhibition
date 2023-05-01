@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <optional>
 #include "SpriteBatch.h"
+#include "ParticleManager.h"
 #include "Particle.h"
 
 class Game 
@@ -38,7 +39,7 @@ private:
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadShaders(); 
 	void CreateBasicGeometry();
-	void CreateParticles();
+	void CreateParticleStates();
 	void DrawParticles();
 	void ResizePostProcessResources();
 	void CreateShadowMapResources();
@@ -100,6 +101,7 @@ private:
 	
 	// Exhibit 4 (Particles)
 	// Information same for all particles
+	ParticleManager* particleManager;
 	DirectX::XMFLOAT4 particleColor = XMFLOAT4(0.5f,0.5f,1.0f,1.0f);
 	DirectX::XMFLOAT3 particlesStartPos = XMFLOAT3(0.0f,1.0f,0.0f);
 	float particleSize=0.1;
@@ -113,20 +115,7 @@ private:
 
 	// Material & transform
 	Transform particleTransform;
-	// Data structure holding particles
-	int particleNum = 100;
-	int livingParticleNum=0;
-	Particle* particles;
-	ParticleVertex* particleVertices;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> particleVertexBuffer; 
-	Microsoft::WRL::ComPtr<ID3D11Buffer> particleIndexBuffer;
-	// Data conversion info
-	DirectX::XMFLOAT2 DefaultUVs[4];
-	void CopyOneParticle(int index);
-	XMFLOAT3 CalcParticleVertexPos(int particleInd, int cornerInd);
-	void CopyParticlesToGPU();
-	void UpdateSingleParticle(float dt, int index);
-	void SpawnParticles();
+
 	//Particle rendering 
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> particleDepthState;
 	Microsoft::WRL::ComPtr<ID3D11BlendState> particleBlendState;

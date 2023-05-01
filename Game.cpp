@@ -279,7 +279,7 @@ void Game::Init()
 	entityList.push_back(starryNight);
 	starryNight->GetTransform()->SetScale(1.0f, 7.0f, 10.0f);
 	starryNight->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
-	exhibits[Blur]->PlaceObject(starryNight, XMFLOAT3(0, 5.0f, 9.9f));
+	exhibits[Blur]->PlaceObject(starryNight, XMFLOAT3(-15.0f, 5.0f, 26.9f));
 
 	ditherObjects.push_back(theMonaLisa);
 	ditherObjects.push_back(starryNight);

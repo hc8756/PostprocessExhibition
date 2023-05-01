@@ -1,3 +1,4 @@
+#include "ParticleManager.h"
 #include "DXCore.h"
 #include <DirectXMath.h>
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
@@ -113,6 +114,31 @@ void ParticleManager::UpdateSingleParticle(float dt, int index)
 	XMStoreFloat3(&particles[index].Position, startVel * t + startPos);
 }
 
+void ParticleManager::CopyParticlesToGPU()
+{
+	if (firstLiveParticle < firstDeadParticle)
+	{
+		for (int i = firstLiveParticle; i < firstDeadParticle; i++)
+			CopyOneParticle(i);
+	}
+	else
+	{
+		// Update first half (from firstAlive to max particles)
+		for (int i = firstLiveParticle; i < particleNum; i++)
+			CopyOneParticle(i);
+
+		// Update second half (from 0 to first dead)
+		for (int i = 0; i < firstDeadParticle; i++)
+			CopyOneParticle(i);
+	}
+
+	D3D11_MAPPED_SUBRESOURCE mapped = {};
+	context->Map(particleVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+
+	memcpy(mapped.pData, particleVertices, sizeof(ParticleVertex) * 4 * particleNum);
+	context->Unmap(particleVertexBuffer.Get(), 0);
+}
+
 void ParticleManager::SpawnParticles()
 {
 	if (livingParticleNum == particleNum)
@@ -129,6 +155,34 @@ void ParticleManager::SpawnParticles()
 	firstDeadParticle %= particleNum;
 
 	livingParticleNum++;
+}
+
+void ParticleManager::UpdateParticles(float dt)
+{
+	if (firstLiveParticle < firstDeadParticle)
+	{
+		for (int i = firstLiveParticle; i < firstDeadParticle; i++) {
+			UpdateSingleParticle(dt, i);
+		}
+	}
+	else {
+		for (int i = firstLiveParticle; i < particleNum; i++) {
+			UpdateSingleParticle(dt, i);
+		}
+
+		// Update second half (from 0 to first dead)
+		for (int i = 0; i < firstDeadParticle; i++) {
+			UpdateSingleParticle(dt, i);
+		}
+	}
+	timeSinceEmit += dt;
+
+	// Enough time to emit?
+	while (timeSinceEmit > secondsPerParticle)
+	{
+		SpawnParticles();
+		timeSinceEmit -= secondsPerParticle;
+	}
 }
 
 void ParticleManager::CopyOneParticle(int index)

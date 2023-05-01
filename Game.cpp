@@ -605,31 +605,7 @@ void Game::Update(float deltaTime, float totalTime)
 	if (firstPerson) {
 		camera->Update(deltaTime);
 	}
-	
-	if (firstLiveParticle < firstDeadParticle)
-	{
-		for (int i = firstLiveParticle; i < firstDeadParticle; i++) {
-			UpdateSingleParticle(deltaTime, i);
-		}
-	}
-	else {
-		for (int i = firstLiveParticle; i < particleNum; i++){
-			UpdateSingleParticle(deltaTime, i);
-		}
-
-		// Update second half (from 0 to first dead)
-		for (int i = 0; i < firstDeadParticle; i++){
-			UpdateSingleParticle(deltaTime,i);
-		}
-	}
-	timeSinceEmit += deltaTime;
-
-	// Enough time to emit?
-	while (timeSinceEmit > secondsPerParticle)
-	{
-		SpawnParticles();
-		timeSinceEmit -= secondsPerParticle;
-	}
+	particleManager->UpdateParticles(deltaTime);
 }
 
 // --------------------------------------------------------

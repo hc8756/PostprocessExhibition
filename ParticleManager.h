@@ -10,7 +10,7 @@ public:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> particleVertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> particleIndexBuffer;
 	// Data conversion info
-	
+	void UpdateParticles(float dt);
 	void CopyOneParticle(int index);
 	void CopyParticlesToGPU();
 	XMFLOAT3 CalcParticleVertexPos(int particleInd, int cornerInd);

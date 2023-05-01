@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "Vertex.h"
+#include "Particle.h"
 #include "Input.h"
 #include "Exhibit.h"
 
@@ -109,8 +110,17 @@ Game::~Game()
 	delete vertexShaderShadow;
 	vertexShaderShadow = nullptr;
 
+	delete pixelShaderParticle;
+	pixelShaderParticle = nullptr;
+
+	delete vertexShaderParticle;
+	vertexShaderParticle = nullptr;
+
 	delete sky;
 	sky = nullptr;
+
+	delete[] particles;
+	delete[] particleVertices;
 }
 
 // --------------------------------------------------------
@@ -124,6 +134,7 @@ void Game::Init()
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
 	CreateBasicGeometry();
+	
 	ResizePostProcessResources();
 	D3D11_SAMPLER_DESC ppSampDesc = {};
 	ppSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -202,10 +213,6 @@ void Game::Init()
 	);
 
 	//Create entities
-	
-
-	//move model entities around so that they don't overlap
-	
 
 	//create camera 
 	camera = new Camera(0, 0, -10, 10.0f, 0.2f, XM_PIDIV4, (float)width / height);
@@ -236,18 +243,6 @@ void Game::Init()
 		L"../../Assets/Textures/marble/Marble_Tiles_001_roughness.jpg",
 		nullptr
 	);
-
-	// brightness contrast exhibit
-	/*GameEntity* earth = new GameEntity(sphere, material1);
-	entityList.push_back(earth);
-	earth->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
-	earth->GetTransform()->SetScale(1.0f, 1.0f, 1.0f);
-
-	GameEntity* moon = new GameEntity(sphere, material2);
-	entityList.push_back(moon);
-	moon->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
-	moon->GetTransform()->SetScale(0.25f, 0.25f, 0.25f);*/ 
-	//exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
 
 	exhibits.push_back(new Exhibit(25));
 
@@ -303,12 +298,6 @@ void Game::Init()
 	starryNight->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
 	exhibits[1]->PlaceObject(starryNight, XMFLOAT3(0, 5.0f, 9.9f));
 
-	/*GameEntity* persistenceMemory = new GameEntity(cube, persistMemMaterial);
-	entityList.push_back(persistenceMemory);
-	persistenceMemory->GetTransform()->SetScale(4.0f, 6.0f, 4.0f);
-	persistenceMemory->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
-	exhibits[1]->PlaceObject(persistenceMemory, XMFLOAT3(-5, 3.0f, 0));*/
-
 	// cel shading exhibit
 	exhibits.push_back(new Exhibit(40));
 	exhibits[2]->AttachTo(exhibits[0], NEGX);
@@ -333,6 +322,14 @@ void Game::Init()
 	entityList.push_back(bloomSphere);
 	exhibits[3]->PlaceObject(bloomSphere, XMFLOAT3(1.0f, 5.0f, 0.0f));
 
+	// particle exhibit
+	exhibits.push_back(new Exhibit(25));
+	exhibits[4]->AttachTo(exhibits[2], POSZ);
+	GameEntity* emitter = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(0.0f, 0.0f, 0.0f)));
+	entityList.push_back(emitter);
+	exhibits[4]->PlaceObject(emitter, XMFLOAT3(0.0f, 0.0f, 0.0f));
+	//particlesStartPos = emitter->GetTransform()->GetPosition();
+	CreateParticles();
 }
 
 void Game::CreateShadowMapResources()
@@ -418,6 +415,8 @@ void Game::LoadShaders()
 	vertexShader = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShader.cso").c_str()); 
 	pixelShader = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShader.cso").c_str());
 	vertexShaderShadow = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShaderShadow.cso").c_str());
+	vertexShaderParticle = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"ParticlesVS.cso").c_str());
+	pixelShaderParticle = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"ParticlesPS.cso").c_str());
 	vertexShaderSky = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShaderSky.cso").c_str());
 	pixelShaderSky = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderSky.cso").c_str());
 	vertexShaderFull = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShaderFull.cso").c_str());
@@ -433,6 +432,99 @@ void Game::CreateBasicGeometry()
 	sphere = new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device);
 }
 
+void Game::CreateParticles() {
+
+	// A depth state for the particles
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // Turns off depth writing
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	device->CreateDepthStencilState(&dsDesc, particleDepthState.GetAddressOf());
+
+	// Blend for particles (additive)
+	D3D11_BLEND_DESC blend = {};
+	blend.AlphaToCoverageEnable = false;
+	blend.IndependentBlendEnable = false;
+	blend.RenderTarget[0].BlendEnable = true;
+	blend.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA; // Still respect pixel shader output alpha
+	blend.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&blend, particleBlendState.GetAddressOf());
+
+	// Debug rasterizer state for particles
+	D3D11_RASTERIZER_DESC rd = {};
+	rd.CullMode = D3D11_CULL_BACK;
+	rd.DepthClipEnable = true;
+	rd.FillMode = D3D11_FILL_WIREFRAME;
+	device->CreateRasterizerState(&rd, particleDebugRasterState.GetAddressOf());
+
+	//create c++ data structure containing particles
+	particles = new Particle[particleNum];
+	particleTransform.SetPosition(particlesStartPos.x, particlesStartPos.y, particlesStartPos.z);
+	
+	for (int i = 0; i < particleNum; i++) {
+		XMFLOAT3 newStartVelocity = XMFLOAT3(0,0,0);
+		newStartVelocity.x += (((float)rand() / RAND_MAX) * 2 - 1) * 1;
+		newStartVelocity.y += (((float)rand() / RAND_MAX) * 2 - 1) * 1;
+		newStartVelocity.z += (((float)rand() / RAND_MAX) * 2 - 1) * 1;
+		particles[i] = {particlesStartPos, newStartVelocity, 0};
+	}
+
+	//Use this to fill vertex and index buffers for particles
+	DefaultUVs[0] = XMFLOAT2(0, 0);
+	DefaultUVs[1] = XMFLOAT2(1, 0);
+	DefaultUVs[2] = XMFLOAT2(1, 1);
+	DefaultUVs[3] = XMFLOAT2(0, 1);
+
+	// Create UV's here, as those will usually stay the same
+	particleVertices = new ParticleVertex[4 * particleNum];
+	for (int i = 0; i < particleNum * 4; i += 4)
+	{
+		particleVertices[i + 0].UV = DefaultUVs[0];
+		particleVertices[i + 1].UV = DefaultUVs[1];
+		particleVertices[i + 2].UV = DefaultUVs[2];
+		particleVertices[i + 3].UV = DefaultUVs[3];
+	}
+
+	// DYNAMIC vertex buffer (no initial data necessary)
+	D3D11_BUFFER_DESC vbDesc = {};
+	vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	vbDesc.Usage = D3D11_USAGE_DYNAMIC;
+	vbDesc.ByteWidth = sizeof(ParticleVertex) * 4 * particleNum;
+	device->CreateBuffer(&vbDesc, 0, particleVertexBuffer.GetAddressOf());
+
+	// Index buffer data
+	unsigned int* indices = new unsigned int[particleNum * 6];
+	int indexCount = 0;
+	for (int i = 0; i < particleNum * 4; i += 4)
+	{
+		indices[indexCount++] = i;
+		indices[indexCount++] = i + 1;
+		indices[indexCount++] = i + 2;
+		indices[indexCount++] = i;
+		indices[indexCount++] = i + 2;
+		indices[indexCount++] = i + 3;
+	}
+	D3D11_SUBRESOURCE_DATA indexData = {};
+	indexData.pSysMem = indices;
+
+	// Regular (static) index buffer
+	D3D11_BUFFER_DESC ibDesc = {};
+	ibDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	ibDesc.CPUAccessFlags = 0;
+	ibDesc.Usage = D3D11_USAGE_DEFAULT;
+	ibDesc.ByteWidth = sizeof(unsigned int) * particleNum * 6;
+	device->CreateBuffer(&ibDesc, &indexData, particleIndexBuffer.GetAddressOf());
+
+	delete[] indices;
+
+	
+}
 
 // --------------------------------------------------------
 // Handle resizing DirectX "stuff" to match the new window size.
@@ -574,33 +666,21 @@ void Game::Update(float deltaTime, float totalTime)
 			break;
 		}
 	}
-
-	//make items rotate along y axis
-	/*static float increment = 0.5f;
-	increment += 0.0005f;*/
-	
-	// move moon
-	/*entityList[0]->GetTransform()->SetRotation(0.0f, increment/2, 0.0f);
-	entityList[1]->GetTransform()->SetPosition(2*sin(increment), 0.0f, 2*cos(increment));
-	exhibits[0]->PlaceObject(entityList[1], DirectX::XMFLOAT3(2 * sin(increment), 3.0f, 2 * cos(increment)))*/;
-
-	//code that will alter fov based on user input
-	/*float fov = camera->GetFoV();
-	if (Input::GetInstance().KeyDown('P')) {
-		fov += 1 * deltaTime;
-		camera->SetFoV(fov);
-	}
-	if (Input::GetInstance().KeyDown('O')) {
-		fov -= 1 * deltaTime;
-		camera->SetFoV(fov);
-	}*/
-
 	if (Input::GetInstance().KeyPress('E')) {
 		firstPerson = !firstPerson;
 		Input::GetInstance().SwapMouseVisible();
 	}
 	if (firstPerson) {
 		camera->Update(deltaTime);
+	}
+
+	//update particle locations
+	for (int i = 0; i < particleNum; i++) {
+		XMVECTOR startPos = XMLoadFloat3(&particles[i].Position);
+		XMVECTOR startVel = XMLoadFloat3(&particles[i].StartVelocity);
+
+		// Use constant acceleration function
+		XMStoreFloat3(&particles[i].Position, startVel * deltaTime + startPos);
 	}
 }
 
@@ -641,9 +721,9 @@ void Game::Draw(float deltaTime, float totalTime)
 			surface->Draw(context, camera);
 		}
 	}
-
+	
 	sky->Draw(context, camera);
-
+	DrawParticles();
 	PostRender();
 	
 	ImGui_ImplDX11_NewFrame();
@@ -673,6 +753,9 @@ void Game::Draw(float deltaTime, float totalTime)
 			ImGui::DragFloat(": bloom blur sigma", &bloomBlurSigma, 0.01f, 0.5f, 2.0f);
 			ImGui::DragFloat(": bloom blur radius", &bloomBlurRadius, 0.01f, 1.0f, 7.0f);
 			ImGui::DragFloat(": bloom blur step size", &bloomBlurStepSize, 0.01f, 0.0f, 2.0f);
+			break;
+		case 4:
+			
 			break;
 	}
 
@@ -711,6 +794,7 @@ void Game::PreRender()
 
 	rtvs[0] = ppRTV.Get();
 	context->OMSetRenderTargets(3, rtvs, depthStencilView.Get());
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void Game::RenderShadowMap()
@@ -762,6 +846,93 @@ void Game::RenderShadowMap()
 	viewport.Width = (float)this->width;
 	viewport.Height = (float)this->height;
 	context->RSSetViewports(1, &viewport);
+	context->RSSetState(0);
+}
+
+void Game::CopyParticlesToGPU()
+{
+	for (int i = 0; i < particleNum; i++) {
+		CopyOneParticle(i);
+	}
+
+	D3D11_MAPPED_SUBRESOURCE mapped = {};
+	context->Map(particleVertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+
+	memcpy(mapped.pData, particleVertices, sizeof(ParticleVertex) * 4 * particleNum);
+	context->Unmap(particleVertexBuffer.Get(), 0);
+}
+
+void Game::CopyOneParticle(int index)
+{
+	int i = index * 4;
+
+	particleVertices[i + 0].Position = CalcParticleVertexPos(index, 0);
+	particleVertices[i + 1].Position = CalcParticleVertexPos(index, 1);
+	particleVertices[i + 2].Position = CalcParticleVertexPos(index, 2);
+	particleVertices[i + 3].Position = CalcParticleVertexPos(index, 3);
+
+	particleVertices[i + 0].Color = particleColor;
+	particleVertices[i + 1].Color = particleColor;
+	particleVertices[i + 2].Color = particleColor;
+	particleVertices[i + 3].Color = particleColor;
+}
+
+
+XMFLOAT3 Game::CalcParticleVertexPos(int particleIndex, int quadCornerIndex)
+{
+	// Get the right and up vectors out of the view matrix
+	XMFLOAT4X4 view = camera->GetView();
+	XMVECTOR camRight = XMVectorSet(view._11, view._21, view._31, 0);
+	XMVECTOR camUp = XMVectorSet(view._12, view._22, view._32, 0);
+
+	// Determine the offset of this corner of the quad
+	// Since the UV's are already set when the emitter is created, 
+	// we can alter that data to determine the general offset of this corner
+	XMFLOAT2 offset = DefaultUVs[quadCornerIndex];
+	offset.x = offset.x * 2 - 1;	// Convert from [0,1] to [-1,1]
+	offset.y = (offset.y * -2 + 1);	// Same, but flip the Y
+
+	// Load into a vector, which we'll assume is float3 with a Z of 0
+	// Create a Z rotation matrix and apply it to the offset
+	XMVECTOR offsetVec = XMLoadFloat2(&offset);
+	XMMATRIX rotMatrix = XMMatrixRotationZ(0);
+	offsetVec = XMVector3Transform(offsetVec, rotMatrix);
+
+	// Add and scale the camera up/right vectors to the position as necessary
+	XMVECTOR posVec = XMLoadFloat3(&particles[particleIndex].Position);
+	posVec += camRight * XMVectorGetX(offsetVec) * particleSize;
+	posVec += camUp * XMVectorGetY(offsetVec) * particleSize;
+
+	// This position is all set
+	XMFLOAT3 pos;
+	XMStoreFloat3(&pos, posVec);
+	return pos;
+}
+
+void Game::DrawParticles() {
+	// Particle states
+	context->OMSetBlendState(particleBlendState.Get(), 0, 0xffffffff);	// Additive blending
+	context->OMSetDepthStencilState(particleDepthState.Get(), 0);		// No depth WRITING
+	
+	CopyParticlesToGPU();
+
+	// Draw buffer
+	UINT stride = sizeof(ParticleVertex);
+	UINT offset = 0;
+	context->IASetVertexBuffers(0, 1, particleVertexBuffer.GetAddressOf(), &stride, &offset);
+	context->IASetIndexBuffer(particleIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+	vertexShaderParticle->SetShader();
+	pixelShaderParticle->SetShader();
+	vertexShaderParticle->SetMatrix4x4("world", particleTransform.GetWorldMatrix());
+	vertexShaderParticle->SetMatrix4x4("view", camera->GetView());
+	vertexShaderParticle->SetMatrix4x4("projection", camera->GetProjection());
+	vertexShaderParticle->CopyAllBufferData();
+	
+	context->DrawIndexed(particleNum * 6, 0, 0);
+
+	// Reset states
+	context->OMSetBlendState(0, 0, 0xffffffff);
+	context->OMSetDepthStencilState(0, 0);
 	context->RSSetState(0);
 }
 
@@ -837,6 +1008,14 @@ void Game::PostRender()
 				pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
 				pixelShaderBrightCont->CopyAllBufferData();
 			}
+			break;
+		case 4:
+			pixelShaderBrightCont->SetShader();
+			pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
+			pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
+			pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
+			pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
+			pixelShaderBrightCont->CopyAllBufferData();
 			break;
 	}
 

@@ -55,6 +55,21 @@ struct VertexToPixel_Shadow
 	float4 screenPosition	: SV_POSITION;
 };
 
+struct ParticleVSInput
+{
+	float3 localPosition	: POSITION;
+	float2 uv				: TEXCOORD;
+	float4 color			: COLOR;
+};
+
+
+struct ParticlePSInput
+{
+	float4 screenPosition	: SV_POSITION;
+	float2 uv				: TEXCOORD;
+	float4 color			: COLOR;
+};
+
 
 struct Light {
 	int Type;

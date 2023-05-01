@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <optional>
 #include "SpriteBatch.h"
-
+#include "Particle.h"
 
 class Game 
 	: public DXCore
@@ -38,6 +38,8 @@ private:
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadShaders(); 
 	void CreateBasicGeometry();
+	void CreateParticles();
+	void DrawParticles();
 	void ResizePostProcessResources();
 	void CreateShadowMapResources();
 	void RenderShadowMap();
@@ -66,6 +68,8 @@ private:
 	SimplePixelShader* pixelShaderSobel;
 	SimpleVertexShader* vertexShaderFull;
 	SimplePixelShader* pixelShaderBloomE;
+	SimpleVertexShader* vertexShaderParticle;
+	SimplePixelShader* pixelShaderParticle;
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultBlackSRV; // default for metal and roughness
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultNormalSRV;
@@ -94,10 +98,32 @@ private:
 	float bloomBlurRadius=5.00;
 	float bloomBlurStepSize=0.09;
 	
+	// Exhibit 4 (Particles)
+	// Information same for all particles
+	DirectX::XMFLOAT4 particleColor = XMFLOAT4(0.5f,0.5f,1.0f,1.0f);
+	DirectX::XMFLOAT3 particlesStartPos = XMFLOAT3(0.0f,1.0f,0.0f);
+	float particleSize=0.1;
+	// Material & transform
+	Transform particleTransform;
+	// Data structure holding particles
+	int particleNum = 100;
+	Particle* particles;
+	ParticleVertex* particleVertices;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> particleVertexBuffer; 
+	Microsoft::WRL::ComPtr<ID3D11Buffer> particleIndexBuffer;
+	// Data conversion info
+	DirectX::XMFLOAT2 DefaultUVs[4];
+	void CopyOneParticle(int index);
+	XMFLOAT3 CalcParticleVertexPos(int particleInd, int cornerInd);
+	void CopyParticlesToGPU();
+	//Particle rendering 
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> particleDepthState;
+	Microsoft::WRL::ComPtr<ID3D11BlendState> particleBlendState;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> particleDebugRasterState;
+
 	//my models
 	Mesh* cube;
 	Mesh* sphere;
-
 
 	//my game entities
 	std::vector<GameEntity*> entityList = {};

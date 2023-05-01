@@ -143,6 +143,9 @@
     <ClInclude Include="Assets\ImGui\imstb_truetype.h">
       <Filter>Header Files\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="Particle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">
@@ -173,6 +176,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="VertexShaderShadow.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticlesPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticlesVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

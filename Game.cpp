@@ -326,6 +326,11 @@ void Game::Init()
 	exhibits[Particles] = new Exhibit(45);
 	exhibits[Particles]->AttachTo(exhibits[CelShading], POSX);
 	exhibits[Particles]->AttachTo(exhibits[Bloom], NEGX);
+	XMFLOAT3 pmStartPos = exhibits[Particles]->origin;
+	pmStartPos.x /= 2; // adjust position
+	pmStartPos.z /= 2;
+	pmStartPos.y += 2;
+	particleManager = new ParticleManager(device, pmStartPos);
 
 	// final exhibit
 	exhibits[Everything] = new Exhibit(70);
@@ -708,6 +713,15 @@ void Game::Draw(float deltaTime, float totalTime)
 		ImGui::DragFloat(": bloom blur radius", &bloomBlurRadius, 0.01f, 1.0f, 7.0f);
 		ImGui::DragFloat(": bloom blur step size", &bloomBlurStepSize, 0.01f, 0.0f, 2.0f);
 	}
+	if (exhibitIndex == Particles || exhibitIndex == Everything) {
+		ImGui::DragFloat(": particles per second", &particleManager->particlesPerSecond, 1, 1, 100);
+		ImGui::DragFloat(": velocity", &particleManager->velocityRange, 0.01f, 0.0f, 5.0f);
+		ImGui::DragFloat(": particle size", &particleManager->particleSize, 0.01f, 0.1f, 1.0f);
+		ImGui::ColorEdit3("particle color", &particleManager->particleColor.x);
+		/*ImGui::DragFloat(": particle R", &particleManager->particleColor.x, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat(": particle G", &particleManager->particleColor.y, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat(": particle B", &particleManager->particleColor.z, 0.01f, 0.0f, 1.0f);*/
+	}
 
 	ImGui::End();
 	//Assemble Together Draw Data
@@ -909,54 +923,6 @@ void Game::PostRender()
 		// draw the full screen triangle
 		context->Draw(3, 0);
 	}
-
-	//if (exhibitIndex == Intro
-	//	|| (exhibitIndex == CelShading && !useSobel)
-	//	|| (exhibitIndex == Bloom && !useBloom)
-	//) {
-	//	// no post processes
-	//	pixelShaderNoPostProcess->SetShader();
-	//	pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
-	//	pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
-	//	pixelShaderBrightCont->CopyAllBufferData();
-	//}
-	//if (exhibitIndex == BrightContrast) {
-	//	pixelShaderBrightCont->SetShader();
-	//	pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
-	//	pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
-	//	pixelShaderBrightCont->SetFloat("brightness", brightness);
-	//	pixelShaderBrightCont->SetFloat("contrast", contrast);
-	//	pixelShaderBrightCont->CopyAllBufferData();
-	//}
-	//if (exhibitIndex == Blur) {
-	//	pixelShaderBlur->SetShader();
-	//	pixelShaderBlur->SetShaderResourceView("image", ppSRV.Get());
-	//	pixelShaderBlur->SetSamplerState("samplerOptions", clampSampler.Get());
-	//	pixelShaderBlur->SetInt("blur", blur);
-	//	pixelShaderBlur->CopyAllBufferData();
-	//}
-	//if (exhibitIndex == CelShading && useSobel) {
-	//	pixelShaderSobel->SetShader();
-	//	pixelShaderSobel->SetShaderResourceView("image", ppSRV.Get());
-	//	pixelShaderSobel->SetSamplerState("samplerOptions", clampSampler.Get());
-	//	pixelShaderSobel->SetFloat("pixelWidth", 1.0f / width);
-	//	pixelShaderSobel->SetFloat("pixelHeight", 1.0f / height);
-	//	pixelShaderSobel->CopyAllBufferData();
-	//}
-	//if(exhibitIndex == Bloom && useBloom) {
-	//	pixelShaderBloomE->SetShader();
-	//	pixelShaderBloomE->SetShaderResourceView("pixels", ppSRV.Get()); // IMPORTANT: This step takes the original post process texture!
-	//	pixelShaderBloomE->SetSamplerState("samplerOptions", clampSampler.Get());
-	//	pixelShaderBloomE->SetFloat("bloomThreshold", bloomThreshold);
-	//	pixelShaderBloomE->SetFloat("bloomIntensity", bloomIntensity);
-	//	pixelShaderBloomE->SetFloat("bloomSaturation", bloomSaturation);
-	//	pixelShaderBloomE->SetFloat("bloomBlurSigma", bloomBlurSigma);
-	//	pixelShaderBloomE->SetFloat("bloomBlurRadius", bloomBlurRadius);
-	//	pixelShaderBloomE->SetFloat("bloomBlurStepSize", bloomBlurStepSize);
-	//	pixelShaderBloomE->SetFloat("pixelWidth", 1.0f / width);
-	//	pixelShaderBloomE->SetFloat("pixelHeight", 1.0f / height);
-	//	pixelShaderBloomE->CopyAllBufferData();
-	//}
 
 	// Draw 3 vertices
 	//context->Draw(3, 0);

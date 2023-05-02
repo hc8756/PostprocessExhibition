@@ -272,29 +272,59 @@ void Game::Init()
 
 	Material* monaLisaMaterial = CreateMaterial(L"../../Assets/Textures/mona lisa.png", nullptr, nullptr, nullptr);
 	Material* starryNightMaterial = CreateMaterial(L"../../Assets/Textures/starry night.jpg", nullptr, nullptr, nullptr);
-	//Material* persistMemMaterial = CreateMaterial(L"../../Assets/Textures/persistence memory.png", nullptr, nullptr, nullptr);
-
-	GameEntity* theMonaLisa = new GameEntity(cube, monaLisaMaterial);
-	entityList.push_back(theMonaLisa);
-	theMonaLisa->GetTransform()->SetScale(1.0f, 8.0f, 6.0f);
-	theMonaLisa->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
-	exhibits[Blur]->PlaceObject(theMonaLisa, XMFLOAT3(0, 5.0f, -9.9f));
+	Material* persistMemMaterial = CreateMaterial(L"../../Assets/Textures/persistence memory.png", nullptr, nullptr, nullptr);
+	Material* pearlEarringMat = CreateMaterial(L"../../Assets/Textures/girl pearl earring.jpg", nullptr, nullptr, nullptr);
+	Material* convergenceMat = CreateMaterial(L"../../Assets/Textures/convergence.jpg", nullptr, nullptr, nullptr);
+	Material* sundayAfternoonMat = CreateMaterial(L"../../Assets/Textures/sunday afternoon.jpg", nullptr, nullptr, nullptr);
+	Material* impressionSunriseMat = CreateMaterial(L"../../Assets/Textures/impression sunrise.jpg", nullptr, nullptr, nullptr);
 
 	GameEntity* starryNight = new GameEntity(cube, starryNightMaterial);
 	entityList.push_back(starryNight);
-	starryNight->GetTransform()->SetScale(1.0f, 7.0f, 10.0f);
+	starryNight->GetTransform()->SetScale(1.0f, 12.0f, 16.0f);
 	starryNight->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
-	exhibits[Blur]->PlaceObject(starryNight, XMFLOAT3(-15.0f, 5.0f, 26.9f));
+	exhibits[Blur]->PlaceObject(starryNight, XMFLOAT3(-16.0f, 7.5f, 27.4f));
+
+	GameEntity* persistenceMemory = new GameEntity(cube, persistMemMaterial);
+	entityList.push_back(persistenceMemory);
+	persistenceMemory->GetTransform()->SetScale(1.0f, 12.0f, 16.0f);
+	persistenceMemory->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
+	exhibits[Blur]->PlaceObject(persistenceMemory, XMFLOAT3(16.0f, 7.5f, 27.4f));
+
+	GameEntity* theMonaLisa = new GameEntity(cube, monaLisaMaterial);
+	entityList.push_back(theMonaLisa);
+	theMonaLisa->GetTransform()->SetScale(1.0f, 12.0f, 9.0);
+	exhibits[Blur]->PlaceObject(theMonaLisa, XMFLOAT3(-27.4f, 7.5f, 16.0f));
+
+	GameEntity* pearlEarring = new GameEntity(cube, pearlEarringMat);
+	entityList.push_back(pearlEarring);
+	pearlEarring->GetTransform()->SetScale(1.0f, 12.0f, 9.0f);
+	exhibits[Blur]->PlaceObject(pearlEarring, XMFLOAT3(-27.4f, 7.5f, -16.0f));
+
+	GameEntity* convergence = new GameEntity(cube, convergenceMat);
+	entityList.push_back(convergence);
+	convergence->GetTransform()->SetScale(1.0f, 12.0f, 20.0f);
+	exhibits[Blur]->PlaceObject(convergence, XMFLOAT3(27.4f, 7.5f, 0.0f));
+
+	GameEntity* sundayAfternoon = new GameEntity(cube, sundayAfternoonMat);
+	entityList.push_back(sundayAfternoon);
+	sundayAfternoon->GetTransform()->SetScale(1.0f, 12.0f, 16.0f);
+	sundayAfternoon->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
+	exhibits[Blur]->PlaceObject(sundayAfternoon, XMFLOAT3(-12.0f, 7.5f, -27.4f));
+
+	GameEntity* impressionSunrise = new GameEntity(cube, impressionSunriseMat);
+	entityList.push_back(impressionSunrise);
+	impressionSunrise->GetTransform()->SetScale(1.0f, 12.0f, 16.0f);
+	impressionSunrise->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
+	exhibits[Blur]->PlaceObject(impressionSunrise, XMFLOAT3(12.0f, 7.5f, -27.4f));
 
 	ditherObjects.push_back(theMonaLisa);
 	ditherObjects.push_back(starryNight);
-
-	/*GameEntity* persistenceMemory = new GameEntity(cube, persistMemMaterial);
-	entityList.push_back(persistenceMemory);
-	persistenceMemory->GetTransform()->SetScale(4.0f, 6.0f, 4.0f);
-	persistenceMemory->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
-	exhibits[1]->PlaceObject(persistenceMemory, XMFLOAT3(-5, 3.0f, 0));*/
-
+	ditherObjects.push_back(persistenceMemory);
+	ditherObjects.push_back(pearlEarring);
+	ditherObjects.push_back(convergence);
+	ditherObjects.push_back(sundayAfternoon);
+	ditherObjects.push_back(impressionSunrise);
+	
 	// halls
 	exhibits[LeftHall] = new Exhibit(20);
 	exhibits[LeftHall]->AttachTo(exhibits[BrightContrast], POSZ);
@@ -623,6 +653,13 @@ void Game::Update(float deltaTime, float totalTime)
 
 			// reset values when leaving a room
 			numCels = 0;
+			brightness = 0;
+			contrast = 1;
+			blur = 1;
+			transparency = 0.0f;
+			for (GameEntity* entity : ditherObjects) {
+				entity->GetMaterial()->SetTransparency(transparency);
+			}
 			break;
 		}
 	}

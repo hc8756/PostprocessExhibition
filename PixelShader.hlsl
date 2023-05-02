@@ -23,6 +23,8 @@ cbuffer ExternalData : register(b0)
 	float3 colorTint;
 	float2 uvScale;
 	float2 uvOffset;
+
+	float transparency; // for dithering
 }
 
 float4 main(VertexToPixel input) : SV_TARGET
@@ -70,14 +72,34 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float depthFromLight = input.posForShadow.z / input.posForShadow.w;
 
 	shadowAmount = ShadowMap.SampleCmpLevelZero(ShadowSampler, shadowUV, depthFromLight);
-
-	totalLight += DirectionalLight(lights[0], input.normal, input.worldPosition, cameraPosition, roughness, metalness, surfaceColor, specularColor);
-	totalLight *= (lights[0].CastsShadows ? shadowAmount: 1.0f);
-
+	for (int i = 0; i < 5; i++) {
+		
+		//directional light
+		if (lights[i].Type == 0) {
+			totalLight += DirectionalLight(lights[i], input.normal, input.worldPosition, cameraPosition, roughness, metalness, surfaceColor, specularColor);
+			totalLight *= (lights[i].CastsShadows ? shadowAmount : 1.0f);
+		}
+		else if (lights[i].Type == 1) {
+			totalLight+= PointLight(lights[i], input.normal, input.worldPosition, cameraPosition, roughness, metalness, surfaceColor, specularColor);
+		}
+	}
 
 	// for cel-shading, round total light to certain values
 	if(numCels > 0) {
-		totalLight = round(totalLight * numCels) / numCels;
+		float maxLight = 0.4f; // make cel shading look better
+		totalLight = ceil(totalLight / maxLight * numCels) / numCels;
+	}
+
+	// dither for transparency less than full
+	if (transparency > 0.0f) {
+		float pixelWidth = 0.01f;
+		float offset = 0;
+		if (input.uv.y % (pixelWidth) < pixelWidth / 2) {
+			offset = pixelWidth / 2;
+		}
+		if ( (input.uv.x + offset) % pixelWidth < pixelWidth * transparency) {
+			discard;
+		}
 	}
 
 	return float4(pow(totalLight+ambientTerm,1.0f/2.2f), 1);

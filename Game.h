@@ -18,6 +18,19 @@
 #include "ParticleManager.h"
 #include "Particle.h"
 
+const int NUM_EXHIBITS = 9;
+enum ExhbitType {
+	Intro = 0,
+	BrightContrast,
+	Blur,
+	CelShading,
+	Bloom,
+	Particles,
+	Everything,
+	LeftHall,
+	RightHall,
+};
+
 class Game 
 	: public DXCore
 {
@@ -71,6 +84,7 @@ private:
 	SimplePixelShader* pixelShaderBloomE;
 	SimpleVertexShader* vertexShaderParticle;
 	SimplePixelShader* pixelShaderParticle;
+	SimplePixelShader* pixelShaderNoPostProcess;
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultBlackSRV; // default for metal and roughness
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultNormalSRV;
@@ -85,7 +99,9 @@ private:
 
 	//Exhibit 1
 	SimplePixelShader* pixelShaderBlur; //shader that effects blur in post processing
-	int blur; // number of pixels to average outward from the current pixel
+	int blur; // number of pixels to average around the current pixel
+	float transparency = 0.0f; // used for certain objects for dithering
+	std::vector<GameEntity*> ditherObjects;
 
 	// Exhibit 2
 	bool useSobel;
@@ -114,7 +130,8 @@ private:
 
 	//my game entities
 	std::vector<GameEntity*> entityList = {};
-	std::vector<Exhibit*> exhibits = {};
+	//std::vector<Exhibit*> exhibits;
+	Exhibit* exhibits[NUM_EXHIBITS];
 
 	//my materials
 	std::vector<Material*> materialList = {};
@@ -142,6 +159,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> ppRTV;		// Allows us to render to a texture
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> ppSRV;		// Allows us to sample from the same texture
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> ppSampler;
+
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pp2RTV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pp2SRV;
+
 	// Outline rendering --------------------------
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> clampSampler;
 	void PreRender();
@@ -172,9 +193,9 @@ private:
 	//   for assignments, given that you clearly cite that this is not
 	//   code of your own design.
 	//
-	// - Note: This code assumes you’re putting the function in Game.cpp, 
-	//   you’ve included WICTextureLoader.h and you have an ID3D11Device 
-	//   ComPtr called “device”.  Make any adjustments necessary for
+	// - Note: This code assumes youï¿½re putting the function in Game.cpp, 
+	//   youï¿½ve included WICTextureLoader.h and you have an ID3D11Device 
+	//   ComPtr called ï¿½deviceï¿½.  Make any adjustments necessary for
 	//   your own implementation.
 	// --------------------------------------------------------
 	// Helper for creating a cubemap from 6 individual textures

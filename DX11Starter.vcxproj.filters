@@ -188,6 +188,7 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="ParticlesVS.hlsl">
+    <FxCompile Include="PixelShaderNoPostProcess.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

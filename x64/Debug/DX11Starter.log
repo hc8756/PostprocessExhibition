@@ -1,44 +1,10 @@
-﻿  compilation object save succeeded; see Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\ParticlesPS.cso
-  compilation object save succeeded; see Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\ParticlesVS.cso
-  compilation object save succeeded; see Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\PixelShader.cso
-Z:\IGMProfile\Desktop\GGP\750project\PixelShaderBloomE.hlsl(51,14): warning X3078: 'i': loop control variable conflicts with a previous declaration in the outer scope; most recent declaration will be used
-  
-  compilation object save succeeded; see Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\PixelShaderBloomE.cso
-Z:\IGMProfile\Desktop\GGP\750project\PixelShaderBlur.hlsl(25,4-80): warning X3206: implicit truncation of vector type
-  
-  compilation object save succeeded; see Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\PixelShaderBlur.cso
-  compilation object save succeeded; see Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\PixelShaderBrightCont.cso
-  compilation object save succeeded; see Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\PixelShaderSky.cso
-Z:\IGMProfile\Desktop\GGP\750project\PixelShaderSobel.hlsl(43,11): warning X3078: 'i': loop control variable conflicts with a previous declaration in the outer scope; most recent declaration will be used
-  
-  compilation object save succeeded; see Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\PixelShaderSobel.cso
-Z:\IGMProfile\Desktop\GGP\750project\VertexShader.hlsl(13,18-45): warning X3578: Output value 'main' is not completely initialized
-  
-  compilation object save succeeded; see Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\VertexShader.cso
-  compilation object save succeeded; see Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\VertexShaderFull.cso
-  compilation object save succeeded; see Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\VertexShaderShadow.cso
-  compilation object save succeeded; see Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\VertexShaderSky.cso
-  imgui.cpp
-  imgui_draw.cpp
-  imgui_impl_dx11.cpp
-  imgui_impl_win32.cpp
-  imgui_tables.cpp
-  imgui_widgets.cpp
-  Camera.cpp
-  DXCore.cpp
-  Exhibit.cpp
-  Game.cpp
-Z:\IGMProfile\Desktop\GGP\750project\Game.h(99,25): warning C4305: 'initializing': truncation from 'double' to 'float'
-Z:\IGMProfile\Desktop\GGP\750project\Game.h(105,20): warning C4305: 'initializing': truncation from 'double' to 'float'
-  GameEntity.cpp
-  Input.cpp
+﻿  Game.cpp
+C:\Users\onlya\Desktop\IGME750\750project\ParticleManager.h(28,8): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\onlya\Desktop\IGME750\750project\Game.h(100,8): warning C4305: 'initializing': truncation from 'double' to 'float'
   Main.cpp
-Z:\IGMProfile\Desktop\GGP\750project\Game.h(99,25): warning C4305: 'initializing': truncation from 'double' to 'float'
-Z:\IGMProfile\Desktop\GGP\750project\Game.h(105,20): warning C4305: 'initializing': truncation from 'double' to 'float'
-  Material.cpp
-  Mesh.cpp
-  SimpleShader.cpp
-  Sky.cpp
-  Transform.cpp
+C:\Users\onlya\Desktop\IGME750\750project\ParticleManager.h(28,8): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\onlya\Desktop\IGME750\750project\Game.h(100,8): warning C4305: 'initializing': truncation from 'double' to 'float'
+  ParticleManager.cpp
+C:\Users\onlya\Desktop\IGME750\750project\ParticleManager.h(28,8): warning C4305: 'initializing': truncation from 'double' to 'float'
   Generating Code...
-  DX11Starter.vcxproj -> Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\DX11Starter.exe
+  DX11Starter.vcxproj -> C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\DX11Starter.exe

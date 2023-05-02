@@ -322,10 +322,11 @@ void Game::Init()
 	// particle exhibit
 	exhibits.push_back(new Exhibit(25));
 	exhibits[4]->AttachTo(exhibits[2], POSZ);
-	particlesStartPos = exhibits[4]->origin;
-	particlesStartPos.x += 16;
-	particlesStartPos.z -= 16;
-	particlesStartPos.y += 2;
+	XMFLOAT3 pmStartPos= exhibits[4]->origin;
+	pmStartPos.x += 16;
+	pmStartPos.z -= 16;
+	pmStartPos.y += 2;
+	particleManager = new ParticleManager(device,pmStartPos);
 }
 
 void Game::CreateShadowMapResources()
@@ -679,7 +680,12 @@ void Game::Draw(float deltaTime, float totalTime)
 			ImGui::DragFloat(": bloom blur step size", &bloomBlurStepSize, 0.01f, 0.0f, 2.0f);
 			break;
 		case 4:
-			
+			ImGui::DragFloat(": particles per second", &particleManager->particlesPerSecond, 1, 1, 100);
+			ImGui::DragFloat(": velocity", &particleManager->velocityRange, 0.01f, 0.0f, 5.0f);
+			ImGui::DragFloat(": particle size", &particleManager->particleSize, 0.01f, 0.1f, 1.0f);
+			ImGui::DragFloat(": particle R", &particleManager->particleColor.x, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(": particle G", &particleManager->particleColor.y, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(": particle B", &particleManager->particleColor.z, 0.01f, 0.0f, 1.0f);
 			break;
 	}
 
@@ -778,32 +784,8 @@ void Game::DrawParticles() {
 	context->OMSetBlendState(particleBlendState.Get(), 0, 0xffffffff);	// Additive blending
 	context->OMSetDepthStencilState(particleDepthState.Get(), 0);		// No depth WRITING
 	
-	CopyParticlesToGPU();
-
-	// Draw buffer
-	UINT stride = sizeof(ParticleVertex);
-	UINT offset = 0;
-	context->IASetVertexBuffers(0, 1, particleVertexBuffer.GetAddressOf(), &stride, &offset);
-	context->IASetIndexBuffer(particleIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-	vertexShaderParticle->SetShader();
-	pixelShaderParticle->SetShader();
-	vertexShaderParticle->SetMatrix4x4("world", particleTransform.GetWorldMatrix());
-	vertexShaderParticle->SetMatrix4x4("view", camera->GetView());
-	vertexShaderParticle->SetMatrix4x4("projection", camera->GetProjection());
-	vertexShaderParticle->CopyAllBufferData();
-	
-	if (firstLiveParticle < firstDeadParticle)
-	{
-		context->DrawIndexed(livingParticleNum * 6, firstLiveParticle * 6, 0);
-	}
-	else
-	{
-		// Draw first half (0 -> dead)
-		context->DrawIndexed(firstDeadParticle * 6, 0, 0);
-
-		// Draw second half (alive -> max)
-		context->DrawIndexed((particleNum - firstLiveParticle) * 6, firstLiveParticle * 6, 0);
-	}
+	particleManager->CopyParticlesToGPU(context, camera);
+	particleManager->DrawParticlesInternal(context, camera, pixelShaderParticle,vertexShaderParticle);
 
 	// Reset states
 	context->OMSetBlendState(0, 0, 0xffffffff);

@@ -2,45 +2,45 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\DX11Starter.exe</FullPath>
+      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\DX11Starter.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
-      <FullPath>Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\ParticlesPS.cso</FullPath>
+      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\ParticlesPS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\ParticlesVS.cso</FullPath>
+      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\ParticlesVS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\PixelShader.cso</FullPath>
+      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShader.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\PixelShaderBloomE.cso</FullPath>
+      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShaderBloomE.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\PixelShaderBlur.cso</FullPath>
+      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShaderBlur.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\PixelShaderBrightCont.cso</FullPath>
+      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShaderBrightCont.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\PixelShaderSky.cso</FullPath>
+      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShaderSky.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\PixelShaderSobel.cso</FullPath>
+      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShaderSobel.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\VertexShader.cso</FullPath>
+      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\VertexShader.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\VertexShaderFull.cso</FullPath>
+      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\VertexShaderFull.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\VertexShaderShadow.cso</FullPath>
+      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\VertexShaderShadow.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>Z:\IGMProfile\Desktop\GGP\750project\x64\Debug\VertexShaderSky.cso</FullPath>
+      <FullPath>C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\VertexShaderSky.cso</FullPath>
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />

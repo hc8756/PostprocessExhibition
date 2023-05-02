@@ -42,6 +42,7 @@ struct VertexToPixel
 	float3 tangent	:	TANGENT;
 	float3 worldPosition	: POSITION;
 	float4 posForShadow		: SHADOWPOS;
+	float4 posForShadow2		: SHADOWPOS1;
 };
 
 struct VertexToPixelSky
@@ -52,6 +53,21 @@ struct VertexToPixelSky
 struct VertexToPixel_Shadow
 {
 	float4 screenPosition	: SV_POSITION;
+};
+
+struct ParticleVSInput
+{
+	float3 localPosition	: POSITION;
+	float2 uv				: TEXCOORD;
+	float4 color			: COLOR;
+};
+
+
+struct ParticlePSInput
+{
+	float4 screenPosition	: SV_POSITION;
+	float2 uv				: TEXCOORD;
+	float4 color			: COLOR;
 };
 
 

@@ -15,7 +15,8 @@
 #include <stdlib.h>
 #include <optional>
 #include "SpriteBatch.h"
-
+#include "ParticleManager.h"
+#include "Particle.h"
 
 class Game 
 	: public DXCore
@@ -38,6 +39,8 @@ private:
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadShaders(); 
 	void CreateBasicGeometry();
+	void CreateParticleStates();
+	void DrawParticles();
 	void ResizePostProcessResources();
 	void CreateShadowMapResources();
 	void RenderShadowMap();
@@ -66,6 +69,8 @@ private:
 	SimplePixelShader* pixelShaderSobel;
 	SimpleVertexShader* vertexShaderFull;
 	SimplePixelShader* pixelShaderBloomE;
+	SimpleVertexShader* vertexShaderParticle;
+	SimplePixelShader* pixelShaderParticle;
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultBlackSRV; // default for metal and roughness
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> defaultNormalSRV;
@@ -94,10 +99,18 @@ private:
 	float bloomBlurRadius=5.00;
 	float bloomBlurStepSize=0.09;
 	
+	// Exhibit 4 (Particles)
+	// Information same for all particles
+	ParticleManager* particleManager;
+	Transform emitterTransform;
+	//Particle rendering 
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> particleDepthState;
+	Microsoft::WRL::ComPtr<ID3D11BlendState> particleBlendState;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> particleDebugRasterState;
+
 	//my models
 	Mesh* cube;
 	Mesh* sphere;
-
 
 	//my game entities
 	std::vector<GameEntity*> entityList = {};
@@ -134,14 +147,15 @@ private:
 	void PreRender();
 	void PostRender();
 
-	// Shadow resources
+	// Shadow map resources
+	DirectX::XMFLOAT4X4 shadowViewMatrix;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowSampler;
+	
 	int shadowMapResolution;
 	float shadowProjectionSize;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> shadowDSV;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowSRV;
-	Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowSampler;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowSRV;	
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> shadowRasterizer;
-	DirectX::XMFLOAT4X4 shadowViewMatrix;
 	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
 
 	// Depth/normal technique

@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "Vertex.h"
+#include "Particle.h"
 #include "Input.h"
 #include "Exhibit.h"
 
@@ -29,14 +30,10 @@ Game::Game(HINSTANCE hInstance)
 		"DirectX Game",	   // Text for the window's title bar
 		1280,			   // Width of the window's client area
 		720,			   // Height of the window's client area
-		true),			   // Show extra stats (fps) in title bar?
-		shadowMapResolution(1024),
-		shadowViewMatrix(),
-		shadowProjectionMatrix(),
-		shadowProjectionSize(10.0f)
+		true)			   // Show extra stats (fps) in title bar?
 {
 	camera = 0;
-	ambientColor= XMFLOAT3(0.1f, 0.1f, 0.1f);
+	ambientColor= XMFLOAT3(0.2f, 0.2f, 0.2f);
 	//Set up exhibit variables
 	exhibitIndex = 0;
 	brightness = 0.0f;
@@ -113,6 +110,12 @@ Game::~Game()
 	delete vertexShaderShadow;
 	vertexShaderShadow = nullptr;
 
+	delete pixelShaderParticle;
+	pixelShaderParticle = nullptr;
+
+	delete vertexShaderParticle;
+	vertexShaderParticle = nullptr;
+
 	delete sky;
 	sky = nullptr;
 }
@@ -128,6 +131,7 @@ void Game::Init()
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
 	CreateBasicGeometry();
+	CreateParticleStates();
 	ResizePostProcessResources();
 	D3D11_SAMPLER_DESC ppSampDesc = {};
 	ppSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -147,7 +151,6 @@ void Game::Init()
 	//Textures
 	//create and zero out a local sampler desc variable
 	D3D11_SAMPLER_DESC samplerDesc = {};
-	//required aaaaa
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -206,6 +209,8 @@ void Game::Init()
 		L"../../Assets/Textures/cobblestone/cobblestone_metal.png"
 	);
 
+	//Create entities
+
 	//create camera 
 	camera = new Camera(0, 0, -10, 10.0f, 0.2f, XM_PIDIV4, (float)width / height);
 
@@ -218,7 +223,7 @@ void Game::Init()
 	directionalLight1.Type = 0;
 	directionalLight1.Direction= XMFLOAT3(1.0f, 0.0f, 0.0f);
 	directionalLight1.Color= XMFLOAT3(0.1f, 0.1f, 0.1f);
-	directionalLight1.Intensity = 5.0f;
+	directionalLight1.Intensity = 10.0f;
 	directionalLight1.CastsShadows = 1;
 	//add entities to the entitiy list
 	lightList.push_back(directionalLight1);
@@ -235,18 +240,6 @@ void Game::Init()
 		L"../../Assets/Textures/marble/Marble_Tiles_001_roughness.jpg",
 		nullptr
 	);
-
-	// brightness contrast exhibit
-	/*GameEntity* earth = new GameEntity(sphere, material1);
-	entityList.push_back(earth);
-	earth->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
-	earth->GetTransform()->SetScale(1.0f, 1.0f, 1.0f);
-
-	GameEntity* moon = new GameEntity(sphere, material2);
-	entityList.push_back(moon);
-	moon->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
-	moon->GetTransform()->SetScale(0.25f, 0.25f, 0.25f);*/ 
-	//exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
 
 	exhibits.push_back(new Exhibit(25));
 
@@ -302,12 +295,6 @@ void Game::Init()
 	starryNight->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
 	exhibits[1]->PlaceObject(starryNight, XMFLOAT3(0, 5.0f, 9.9f));
 
-	/*GameEntity* persistenceMemory = new GameEntity(cube, persistMemMaterial);
-	entityList.push_back(persistenceMemory);
-	persistenceMemory->GetTransform()->SetScale(4.0f, 6.0f, 4.0f);
-	persistenceMemory->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
-	exhibits[1]->PlaceObject(persistenceMemory, XMFLOAT3(-5, 3.0f, 0));*/
-
 	// cel shading exhibit
 	exhibits.push_back(new Exhibit(40));
 	exhibits[2]->AttachTo(exhibits[0], NEGX);
@@ -332,13 +319,28 @@ void Game::Init()
 	entityList.push_back(bloomSphere);
 	exhibits[3]->PlaceObject(bloomSphere, XMFLOAT3(1.0f, 5.0f, 0.0f));
 
+	// particle exhibit
+	exhibits.push_back(new Exhibit(25));
+	exhibits[4]->AttachTo(exhibits[2], POSZ);
+	XMFLOAT3 pmStartPos= exhibits[4]->origin;
+	pmStartPos.x += 16;
+	pmStartPos.z -= 16;
+	pmStartPos.y += 2;
+	particleManager = new ParticleManager(device,pmStartPos);
 }
 
 void Game::CreateShadowMapResources()
 {
 	// Create shadow requirements ------------------------------------------
-	shadowMapResolution = 1024;
-	shadowProjectionSize = 50.0f;
+	shadowMapResolution = 5120;
+	shadowProjectionSize = 100;
+
+	// Create the "camera" matrices for the shadow map rendering
+	XMMATRIX shView = XMMatrixLookAtLH(
+		XMVectorSet(-5, 10, 0, 0),
+		XMVectorSet(10, 10, 0, 0),
+		XMVectorSet(0, 1, 0, 0));
+	XMStoreFloat4x4(&shadowViewMatrix, shView);
 
 	// Create the actual texture that will be the shadow map
 	D3D11_TEXTURE2D_DESC shadowDesc = {};
@@ -371,6 +373,19 @@ void Game::CreateShadowMapResources()
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	device->CreateShaderResourceView(shadowTexture.Get(), &srvDesc, shadowSRV.GetAddressOf());
 
+	// Create a rasterizer state
+	D3D11_RASTERIZER_DESC shadowRastDesc = {};
+	shadowRastDesc.FillMode = D3D11_FILL_SOLID;
+	shadowRastDesc.CullMode = D3D11_CULL_BACK;
+	shadowRastDesc.DepthClipEnable = true;
+	shadowRastDesc.DepthBias = 1000; // Multiplied by (smallest possible positive value storable in the depth buffer)
+	shadowRastDesc.DepthBiasClamp = 0.0f;
+	shadowRastDesc.SlopeScaledDepthBias = 1.0f;
+	device->CreateRasterizerState(&shadowRastDesc, &shadowRasterizer);
+
+	XMMATRIX shProj = XMMatrixOrthographicLH(shadowProjectionSize, shadowProjectionSize, 0.1f, 100.0f);
+	XMStoreFloat4x4(&shadowProjectionMatrix, shProj);
+
 	// Create the special "comparison" sampler state for shadows
 	D3D11_SAMPLER_DESC shadowSampDesc = {};
 	shadowSampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // COMPARISON filter!
@@ -383,41 +398,6 @@ void Game::CreateShadowMapResources()
 	shadowSampDesc.BorderColor[2] = 1.0f;
 	shadowSampDesc.BorderColor[3] = 1.0f;
 	device->CreateSamplerState(&shadowSampDesc, &shadowSampler);
-
-	// Create a rasterizer state
-	D3D11_RASTERIZER_DESC shadowRastDesc = {};
-	shadowRastDesc.FillMode = D3D11_FILL_SOLID;
-	shadowRastDesc.CullMode = D3D11_CULL_BACK;
-	shadowRastDesc.DepthClipEnable = true;
-	shadowRastDesc.DepthBias = 1000; // Multiplied by (smallest possible positive value storable in the depth buffer)
-	shadowRastDesc.DepthBiasClamp = 0.0f;
-	shadowRastDesc.SlopeScaledDepthBias = 1.0f;
-	device->CreateRasterizerState(&shadowRastDesc, &shadowRasterizer);
-
-	// Create the "camera" matrices for the shadow map rendering
-
-	// View
-	XMMATRIX shView = XMMatrixLookAtLH(
-		XMVectorSet(-5, 0, 0, 0),
-		XMVectorSet(5, 0, 0, 0),
-		XMVectorSet(0, 1, 0, 0));
-	XMStoreFloat4x4(&shadowViewMatrix, shView);
-
-	// Projection - we want ORTHOGRAPHIC for directional light shadows
-	// NOTE: This particular projection is set up to be SMALLER than
-	// the overall "scene", to show what happens when objects go
-	// outside the shadow area.  In a game, you'd never want the
-	// user to see this edge, but I'm specifically making the projection
-	// small in this demo to show you that it CAN happen.
-	//
-	// Ideally, the first two parameters below would be adjusted to
-	// fit the scene (or however much of the scene the user can see
-	// at a time).  More advanced techniques, like cascaded shadow maps,
-	// would use multiple (usually 4) shadow maps with increasingly larger
-	// projections to ensure large open world games have shadows "everywhere"
-	XMMATRIX shProj = XMMatrixOrthographicLH(shadowProjectionSize, shadowProjectionSize, 0.1f, 100.0f);
-	XMStoreFloat4x4(&shadowProjectionMatrix, shProj);
-
 }
 // --------------------------------------------------------
 // Loads shaders from compiled shader object (.cso) files
@@ -432,6 +412,8 @@ void Game::LoadShaders()
 	vertexShader = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShader.cso").c_str()); 
 	pixelShader = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShader.cso").c_str());
 	vertexShaderShadow = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShaderShadow.cso").c_str());
+	vertexShaderParticle = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"ParticlesVS.cso").c_str());
+	pixelShaderParticle = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"ParticlesPS.cso").c_str());
 	vertexShaderSky = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShaderSky.cso").c_str());
 	pixelShaderSky = new SimplePixelShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"PixelShaderSky.cso").c_str());
 	vertexShaderFull = new SimpleVertexShader(device.Get(), context.Get(), GetFullPathTo_Wide(L"VertexShaderFull.cso").c_str());
@@ -447,6 +429,35 @@ void Game::CreateBasicGeometry()
 	sphere = new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device);
 }
 
+void Game::CreateParticleStates() {
+	// A depth state for the particles
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // Turns off depth writing
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	device->CreateDepthStencilState(&dsDesc, particleDepthState.GetAddressOf());
+
+	// Blend for particles (additive)
+	D3D11_BLEND_DESC blend = {};
+	blend.AlphaToCoverageEnable = false;
+	blend.IndependentBlendEnable = false;
+	blend.RenderTarget[0].BlendEnable = true;
+	blend.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA; // Still respect pixel shader output alpha
+	blend.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&blend, particleBlendState.GetAddressOf());
+
+	// Debug rasterizer state for particles
+	D3D11_RASTERIZER_DESC rd = {};
+	rd.CullMode = D3D11_CULL_BACK;
+	rd.DepthClipEnable = true;
+	rd.FillMode = D3D11_FILL_WIREFRAME;
+	device->CreateRasterizerState(&rd, particleDebugRasterState.GetAddressOf());	
+}
 
 // --------------------------------------------------------
 // Handle resizing DirectX "stuff" to match the new window size.
@@ -511,7 +522,6 @@ void Game::ResizePostProcessResources()
 	device->CreateShaderResourceView(sceneDepthsTexture.Get(), 0, sceneDepthSRV.GetAddressOf());
 }
 
-
 Material* Game::CreateMaterial(const wchar_t* albedoPath, const wchar_t* normalsPath, const wchar_t* roughnessPath, const wchar_t* metalPath)
 {
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> albedoSRV;
@@ -561,7 +571,6 @@ Material* Game::CreateColorMaterial(XMFLOAT3 color)
 	return material;
 }
 
-
 // --------------------------------------------------------
 // Update your game here - user input, move objects, AI, etc.
 // --------------------------------------------------------
@@ -587,32 +596,9 @@ void Game::Update(float deltaTime, float totalTime)
 
 			// reset values when leaving a room
 			numCels = 0;
-			brightness = 0.0f;
-			contrast = 1.0f;
 			break;
 		}
 	}
-
-	//make items rotate along y axis
-	/*static float increment = 0.5f;
-	increment += 0.0005f;*/
-	
-	// move moon
-	/*entityList[0]->GetTransform()->SetRotation(0.0f, increment/2, 0.0f);
-	entityList[1]->GetTransform()->SetPosition(2*sin(increment), 0.0f, 2*cos(increment));
-	exhibits[0]->PlaceObject(entityList[1], DirectX::XMFLOAT3(2 * sin(increment), 3.0f, 2 * cos(increment)))*/;
-
-	//code that will alter fov based on user input
-	/*float fov = camera->GetFoV();
-	if (Input::GetInstance().KeyDown('P')) {
-		fov += 1 * deltaTime;
-		camera->SetFoV(fov);
-	}
-	if (Input::GetInstance().KeyDown('O')) {
-		fov -= 1 * deltaTime;
-		camera->SetFoV(fov);
-	}*/
-
 	if (Input::GetInstance().KeyPress('E')) {
 		firstPerson = !firstPerson;
 		Input::GetInstance().SwapMouseVisible();
@@ -620,6 +606,7 @@ void Game::Update(float deltaTime, float totalTime)
 	if (firstPerson) {
 		camera->Update(deltaTime);
 	}
+	particleManager->UpdateParticles(deltaTime);
 }
 
 // --------------------------------------------------------
@@ -628,8 +615,6 @@ void Game::Update(float deltaTime, float totalTime)
 void Game::Draw(float deltaTime, float totalTime)
 {
 	PreRender();
-	//
-
 	//call game entity drawing method for each entity
 	//also set up lighting stuff
 	
@@ -646,7 +631,6 @@ void Game::Draw(float deltaTime, float totalTime)
 	}
 
 	// draw all exhibits
-	/**/
 	for (Exhibit* exhibit : exhibits) {
 		const std::vector<GameEntity*>* surfaces = exhibit->GetEntities();
 		for (GameEntity* surface : *surfaces) {
@@ -663,13 +647,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		}
 	}
 	
-	//draw sky
 	sky->Draw(context, camera);
+	DrawParticles();
+	PostRender();
 	
-	
-	
-	//draw ImGui elements
-	// Start the Dear ImGui frame
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
@@ -686,7 +667,7 @@ void Game::Draw(float deltaTime, float totalTime)
 			ImGui::DragInt(": blur", &blur, 1, 0, 20);
 			break;
 		case 2:
-			ImGui::SliderInt(": cels", &numCels, 0, 6);
+			ImGui::DragInt(": cels", &numCels, 1, 0, 6);
 			ImGui::Checkbox(": outline", &useSobel);
 			break;
 		case 3:
@@ -698,16 +679,24 @@ void Game::Draw(float deltaTime, float totalTime)
 			ImGui::DragFloat(": bloom blur radius", &bloomBlurRadius, 0.01f, 1.0f, 7.0f);
 			ImGui::DragFloat(": bloom blur step size", &bloomBlurStepSize, 0.01f, 0.0f, 2.0f);
 			break;
+		case 4:
+			ImGui::DragFloat(": particles per second", &particleManager->particlesPerSecond, 1, 1, 100);
+			ImGui::DragFloat(": velocity", &particleManager->velocityRange, 0.01f, 0.0f, 5.0f);
+			ImGui::DragFloat(": particle size", &particleManager->particleSize, 0.01f, 0.1f, 1.0f);
+			ImGui::DragFloat(": particle R", &particleManager->particleColor.x, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(": particle G", &particleManager->particleColor.y, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat(": particle B", &particleManager->particleColor.z, 0.01f, 0.0f, 1.0f);
+			break;
 	}
 
 	ImGui::End();
-	
+	//Assemble Together Draw Data
+	ImGui::Render();
+	//Render Draw Data
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	//unbind shadow map
 	ID3D11ShaderResourceView* nullSRVs[16] = {};
 	context->PSSetShaderResources(0, 16, nullSRVs);
-	PostRender();
-	ImGui::Render(); //Assemble Together Draw Data
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());//Render Draw Data
 	swapChain->Present(0, 0);
 	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), depthStencilView.Get());
 }
@@ -735,6 +724,7 @@ void Game::PreRender()
 
 	rtvs[0] = ppRTV.Get();
 	context->OMSetRenderTargets(3, rtvs, depthStencilView.Get());
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void Game::RenderShadowMap()
@@ -756,7 +746,7 @@ void Game::RenderShadowMap()
 
 	// Turn on our shadow map Vertex Shader
 	// and turn OFF the pixel shader entirely
-	
+
 	vertexShaderShadow->SetShader();
 	vertexShaderShadow->SetMatrix4x4("view", shadowViewMatrix);
 	vertexShaderShadow->SetMatrix4x4("projection", shadowProjectionMatrix);
@@ -780,11 +770,26 @@ void Game::RenderShadowMap()
 			surface->GetMesh()->Draw(context);
 		}
 	}
-	// After rendering the shadow map, go back to the screen
+
+	// After rendering the shadow maps, go back to the screen
 	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), depthStencilView.Get());
 	viewport.Width = (float)this->width;
 	viewport.Height = (float)this->height;
 	context->RSSetViewports(1, &viewport);
+	context->RSSetState(0);
+}
+
+void Game::DrawParticles() {
+	// Particle states
+	context->OMSetBlendState(particleBlendState.Get(), 0, 0xffffffff);	// Additive blending
+	context->OMSetDepthStencilState(particleDepthState.Get(), 0);		// No depth WRITING
+	
+	particleManager->CopyParticlesToGPU(context, camera);
+	particleManager->DrawParticlesInternal(context, camera, pixelShaderParticle,vertexShaderParticle);
+
+	// Reset states
+	context->OMSetBlendState(0, 0, 0xffffffff);
+	context->OMSetDepthStencilState(0, 0);
 	context->RSSetState(0);
 }
 
@@ -832,8 +837,6 @@ void Game::PostRender()
 				pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
 				pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
 				pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
-				pixelShaderBrightCont->SetFloat("brightness", brightness);
-				pixelShaderBrightCont->SetFloat("contrast", contrast);
 				pixelShaderBrightCont->CopyAllBufferData();
 			}
 			break;
@@ -860,10 +863,16 @@ void Game::PostRender()
 				pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
 				pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
 				pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
-				pixelShaderBrightCont->SetFloat("brightness", brightness);
-				pixelShaderBrightCont->SetFloat("contrast", contrast);
 				pixelShaderBrightCont->CopyAllBufferData();
 			}
+			break;
+		case 4:
+			pixelShaderBrightCont->SetShader();
+			pixelShaderBrightCont->SetShaderResourceView("image", ppSRV.Get());
+			pixelShaderBrightCont->SetSamplerState("samplerOptions", clampSampler.Get());
+			pixelShaderBrightCont->SetFloat("pixelWidth", 1.0f / width);
+			pixelShaderBrightCont->SetFloat("pixelHeight", 1.0f / height);
+			pixelShaderBrightCont->CopyAllBufferData();
 			break;
 	}
 

@@ -8,7 +8,6 @@ cbuffer ExternalData : register(b0)
 
 	matrix shadowView;
 	matrix shadowProjection;
-
 }
 
 VertexToPixel main( VertexShaderInput input )

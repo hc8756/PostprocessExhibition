@@ -25,12 +25,11 @@ public:
 	void AttachTo(Exhibit* other, Direction direction);
 	void CheckCollisions(Camera* camera);
 	bool IsInExhibit(const XMFLOAT3& position);
-
-private:
 	DirectX::XMFLOAT3 origin;
+private:
+	
 	float size;
 	std::vector<GameEntity*>* surfaces; // the floor and walls
-
 	const float THICKNESS = 1;
 	const float WALL_HEIGHT = 10;
 };

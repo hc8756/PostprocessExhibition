@@ -35,10 +35,10 @@ void Camera::Update(float dt)
 	if (input.KeyDown(VK_SPACE)) { transform.MoveAbsolute(0, speed, 0); }
 
 	// Limit vertical values
-	if (transform.GetPosition().y < 1) {
+	/*if (transform.GetPosition().y < 1) {
 		transform.SetPosition(transform.GetPosition().x, 1, transform.GetPosition().z);
 	}
-	else if (transform.GetPosition().y > 20) {
+	else*/ if (transform.GetPosition().y > 20) {
 		transform.SetPosition(transform.GetPosition().x, 20, transform.GetPosition().z);
 	}
 
@@ -79,7 +79,7 @@ void Camera::UpdateViewMatrix()
 void Camera::UpdateProjectionMatrix(float aspectRatio)
 {
 	this->aspectRatio = aspectRatio;
-	XMMATRIX P = XMMatrixPerspectiveFovLH(fieldOfView, aspectRatio, 0.01f, 100.0f);
+	XMMATRIX P = XMMatrixPerspectiveFovLH(fieldOfView, aspectRatio, 0.01f, 200.0f);
 	XMStoreFloat4x4(&projectionMatrix, P);
 }
 

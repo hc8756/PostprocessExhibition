@@ -221,7 +221,9 @@ void Game::Init()
 	//Sunlight from the left
 	Light directionalLight1 = {};
 	directionalLight1.Type = 0;
-	directionalLight1.Direction= XMFLOAT3(1.0f, 0.0f, 0.0f);
+	//directionalLight1.Direction= XMFLOAT3(0.0f, -sin(XM_PI / 3), cos(XM_PI / 3)); // must match shadow map angle
+	//directionalLight1.Direction = XMFLOAT3(0.0f, -1, 0);
+	directionalLight1.Direction = XMFLOAT3(0.0f, -1.0f, 0);
 	directionalLight1.Color= XMFLOAT3(0.1f, 0.1f, 0.1f);
 	directionalLight1.Intensity = 10.0f;
 	directionalLight1.CastsShadows = 1;
@@ -241,6 +243,19 @@ void Game::Init()
 		nullptr
 	);
 
+	auto MakeSign = [&](Material* material) {
+		GameEntity* sign = new GameEntity(cube, material);
+		entityList.push_back(sign);
+		sign->GetTransform()->SetScale(0.1f, 3.5f, 4.5f);
+		return sign;
+	};
+
+	Material* blurSignMat = CreateMaterial(L"../../Assets/Textures/signs/blur sign.png", nullptr, nullptr, nullptr);
+	Material* brightnessSignMat = CreateMaterial(L"../../Assets/Textures/signs/brightness sign.png", nullptr, nullptr, nullptr);
+	Material* bloomSignMat = CreateMaterial(L"../../Assets/Textures/signs/bloom sign.png", nullptr, nullptr, nullptr);
+	Material* celSignMat = CreateMaterial(L"../../Assets/Textures/signs/cel sign.png", nullptr, nullptr, nullptr);
+	Material* particleSignMat = CreateMaterial(L"../../Assets/Textures/signs/particle sign.png", nullptr, nullptr, nullptr);
+
 	// intro exhibit
 	exhibits[Intro] = new Exhibit(30);
 	GameEntity* firstPillar = new GameEntity(cube, Exhibit::marble);
@@ -248,13 +263,15 @@ void Game::Init()
 	firstPillar->GetTransform()->SetScale(5, 10, 5);
 	exhibits[Intro]->PlaceObject(firstPillar, XMFLOAT3(0, 5, 0));
 
-	GameEntity* introSign = new GameEntity(cube, 
-		CreateMaterial(L"../../Assets/Textures/signs/intro sign.png", nullptr, nullptr, nullptr)
-	);
-	entityList.push_back(introSign);
-	introSign->GetTransform()->SetScale(0.1f, 3.5f, 4.5f);
+	GameEntity* introSign = MakeSign(CreateMaterial(L"../../Assets/Textures/signs/intro sign.png", nullptr, nullptr, nullptr));
 	introSign->GetTransform()->SetRotation(0, XM_PIDIV2, 0);
 	exhibits[Intro]->PlaceObject(introSign, XMFLOAT3(0, 6, -2.5f));
+
+	GameEntity* introToBlurSign = MakeSign(blurSignMat);
+	exhibits[Intro]->PlaceObject(introToBlurSign, XMFLOAT3(14.5f, 6, -7.0f));
+
+	GameEntity* introToBrightnessSign = MakeSign(brightnessSignMat);
+	exhibits[Intro]->PlaceObject(introToBrightnessSign, XMFLOAT3(-14.5f, 6, -7.0f));
 
 	// brightness contrast exhibit
 	exhibits[BrightContrast] = new Exhibit(55);
@@ -381,14 +398,19 @@ void Game::Init()
 void Game::CreateShadowMapResources()
 {
 	// Create shadow requirements ------------------------------------------
-	shadowMapResolution = 5120;
-	shadowProjectionSize = 100;
+	shadowMapResolution = 10240; // 5120;
+	shadowProjectionSize = 200; // 100
 
 	// Create the "camera" matrices for the shadow map rendering
+	/*XMMATRIX shView = XMMatrixLookAtLH(
+		XMVectorSet(-42, 8, 0, 0),
+		XMVectorSet(10, 8, 0, 0),
+		XMVectorSet(0, 1, 0, 0));*/
 	XMMATRIX shView = XMMatrixLookAtLH(
-		XMVectorSet(-5, 10, 0, 0),
-		XMVectorSet(10, 10, 0, 0),
-		XMVectorSet(0, 1, 0, 0));
+		XMVectorSet(0, 20, 70, 0),
+		XMVectorSet(0, 0, 70, 0),
+		XMVectorSet(0, 0, 1, 0));
+	//shView = XMMatrixRotationX(-XM_PI / 2) * shView;
 	XMStoreFloat4x4(&shadowViewMatrix, shView);
 
 	// Create the actual texture that will be the shadow map
@@ -432,7 +454,7 @@ void Game::CreateShadowMapResources()
 	shadowRastDesc.SlopeScaledDepthBias = 1.0f;
 	device->CreateRasterizerState(&shadowRastDesc, &shadowRasterizer);
 
-	XMMATRIX shProj = XMMatrixOrthographicLH(shadowProjectionSize, shadowProjectionSize, 0.1f, 100.0f);
+	XMMATRIX shProj = XMMatrixOrthographicLH(shadowProjectionSize, shadowProjectionSize, 0.1f, 200.0f);
 	XMStoreFloat4x4(&shadowProjectionMatrix, shProj);
 
 	// Create the special "comparison" sampler state for shadows
@@ -754,10 +776,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		ImGui::DragFloat(": particles per second", &particleManager->particlesPerSecond, 1, 1, 100);
 		ImGui::DragFloat(": velocity", &particleManager->velocityRange, 0.01f, 0.0f, 5.0f);
 		ImGui::DragFloat(": particle size", &particleManager->particleSize, 0.01f, 0.1f, 1.0f);
-		ImGui::ColorEdit3("particle color", &particleManager->particleColor.x);
-		/*ImGui::DragFloat(": particle R", &particleManager->particleColor.x, 0.01f, 0.0f, 1.0f);
-		ImGui::DragFloat(": particle G", &particleManager->particleColor.y, 0.01f, 0.0f, 1.0f);
-		ImGui::DragFloat(": particle B", &particleManager->particleColor.z, 0.01f, 0.0f, 1.0f);*/
+		ImGui::ColorEdit4("particle color", &particleManager->particleColor.x);
 	}
 
 	ImGui::End();

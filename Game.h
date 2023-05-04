@@ -108,13 +108,12 @@ private:
 
 	// Exhibit 3
 	bool useBloom=0;
-	float bloomThreshold=1.0;
+	float bloomThreshold=0.01;
 	float bloomIntensity=0.5;
-	float bloomSaturation=1.0;
-	float bloomBlurSigma=2.0;
-	float bloomBlurRadius=5.00;
-	float bloomBlurStepSize=0.09;
-	
+	float bloomSaturation=2.0;
+	float bloomBlurSigma=1.5;
+	float bloomBlurRadius=1.0;
+	float bloomBlurStepSize=0.3;
 	// Exhibit 4 (Particles)
 	// Information same for all particles
 	ParticleManager* particleManager;

@@ -293,6 +293,10 @@ void Game::Init()
 	Material* convergenceMat = CreateMaterial(L"../../Assets/Textures/convergence.jpg", nullptr, nullptr, nullptr);
 	Material* sundayAfternoonMat = CreateMaterial(L"../../Assets/Textures/sunday afternoon.jpg", nullptr, nullptr, nullptr);
 	Material* impressionSunriseMat = CreateMaterial(L"../../Assets/Textures/impression sunrise.jpg", nullptr, nullptr, nullptr);
+	// neon lights
+	Material* neonlight1 = CreateMaterial(L"../../Assets/Textures/neon/neonlight1.png", nullptr, nullptr, nullptr);
+	Material* neonlight2 = CreateMaterial(L"../../Assets/Textures/neon/neonlight2.png", nullptr, nullptr, nullptr);
+	Material* neonlight3 = CreateMaterial(L"../../Assets/Textures/neon/neonlight3.png", nullptr, nullptr, nullptr);
 
 	GameEntity* starryNight = new GameEntity(cube, starryNightMaterial);
 	entityList.push_back(starryNight);
@@ -363,10 +367,23 @@ void Game::Init()
 	// bloom & emmisive
 	exhibits[Bloom] = new Exhibit(40);
 	exhibits[Bloom]->AttachTo(exhibits[RightHall], POSZ);
+	GameEntity* neonlightObj1 = new GameEntity(cube, neonlight1);
+	entityList.push_back(neonlightObj1);
+	neonlightObj1->GetTransform()->SetScale(1.0f, 12.0f, 12.0f);
+	neonlightObj1->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
+	exhibits[Bloom]->PlaceObject(neonlightObj1, XMFLOAT3(10, 7, 19.5));
 
-	GameEntity* bloomSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 0.0f, 2.55f)));
-	entityList.push_back(bloomSphere);
-	exhibits[Bloom]->PlaceObject(bloomSphere, XMFLOAT3(1.0f, 5.0f, 0.0f));
+	GameEntity* neonlightObj2 = new GameEntity(cube, neonlight2);
+	entityList.push_back(neonlightObj2);
+	neonlightObj2->GetTransform()->SetScale(1.0f, 12.0f, 12.0f);
+	neonlightObj2->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
+	exhibits[Bloom]->PlaceObject(neonlightObj2, XMFLOAT3(0, 7, 19.5));
+
+	GameEntity* neonlightObj3 = new GameEntity(cube, neonlight3);
+	entityList.push_back(neonlightObj3);
+	neonlightObj3->GetTransform()->SetScale(1.0f, 12.0f, 12.0f);
+	neonlightObj3->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
+	exhibits[Bloom]->PlaceObject(neonlightObj3, XMFLOAT3(-10, 7, 19.5));
 
 	// particles
 	exhibits[Particles] = new Exhibit(45);
@@ -381,17 +398,6 @@ void Game::Init()
 	// final exhibit
 	exhibits[Everything] = new Exhibit(70);
 	exhibits[Everything]->AttachTo(exhibits[Particles], POSZ);
-
-	/*GameEntity* earth = new GameEntity(sphere, material1);
-	entityList.push_back(earth);
-	earth->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
-	earth->GetTransform()->SetScale(1.0f, 1.0f, 1.0f);
-
-	GameEntity* moon = new GameEntity(sphere, material2);
-	entityList.push_back(moon);
-	moon->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
-	moon->GetTransform()->SetScale(0.25f, 0.25f, 0.25f);*/
-	//exhibits[0]->PlaceObject(entityList[0], DirectX::XMFLOAT3(0, 3, 0));
 }
 
 void Game::CreateShadowMapResources()
@@ -764,12 +770,9 @@ void Game::Draw(float deltaTime, float totalTime)
 	}
 	if(exhibitIndex == Bloom || exhibitIndex == Everything) {
 		ImGui::Checkbox(": bloom", &useBloom);
-		ImGui::DragFloat(": bloom threshold", &bloomThreshold, 0.01f, 0.5f, 1.0f);
-		ImGui::DragFloat(": bloom intensity", &bloomIntensity, 0.01f, 0.5f, 2.0f);
-		ImGui::DragFloat(": bloom saturation", &bloomSaturation, 0.01f, 0.5f, 1.0f);
-		ImGui::DragFloat(": bloom blur sigma", &bloomBlurSigma, 0.01f, 0.5f, 2.0f);
-		ImGui::DragFloat(": bloom blur radius", &bloomBlurRadius, 0.01f, 1.0f, 7.0f);
-		ImGui::DragFloat(": bloom blur step size", &bloomBlurStepSize, 0.01f, 0.0f, 2.0f);
+		ImGui::DragFloat(": bloom blur sigma", &bloomBlurSigma, 0.01f, 0.0f, 20.0f);
+		ImGui::DragFloat(": bloom step size", &bloomBlurStepSize, 0.01f, 0.0f, 2.0f);
+		ImGui::DragFloat(": bloom blur radius", &bloomBlurRadius, 1.0f, 0.0f, 2.0f);
 	}
 	if (exhibitIndex == Particles || exhibitIndex == Everything) {
 		ImGui::DragFloat(": particles per second", &particleManager->particlesPerSecond, 1, 1, 100);

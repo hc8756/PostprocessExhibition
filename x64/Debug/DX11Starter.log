@@ -1,8 +1,4 @@
-﻿  Game.cpp
-C:\Users\ethan\OneDrive\Documents\Github\750project\ParticleManager.h(28): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\Users\ethan\OneDrive\Documents\Github\750project\Game.h(116): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\Users\ethan\OneDrive\Documents\Github\750project\Game.cpp(282,110): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ethan\OneDrive\Documents\Github\750project\Game.cpp(282,83): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ethan\OneDrive\Documents\Github\750project\Game.cpp(282,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ethan\OneDrive\Documents\Github\750project\Game.cpp(756,63): warning C4305: 'argument': truncation from 'double' to 'float'
-  DX11Starter.vcxproj -> C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\DX11Starter.exe
+﻿C:\Users\onlya\Desktop\IGME750\750project\PixelShaderBloomE.hlsl(50,14): warning X3078: 'i': loop control variable conflicts with a previous declaration in the outer scope; most recent declaration will be used
+  
+  compilation object save succeeded; see C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShaderBloomE.cso
+  DX11Starter.vcxproj -> C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\DX11Starter.exe

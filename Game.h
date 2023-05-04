@@ -113,7 +113,6 @@ private:
 	float bloomSaturation=2.0;
 	float bloomBlurSigma=1.5;
 	float bloomBlurRadius=1.0;
-	float bloomBlurStepSize=0.3;
 	// Exhibit 4 (Particles)
 	// Information same for all particles
 	ParticleManager* particleManager;

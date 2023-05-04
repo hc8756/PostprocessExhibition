@@ -368,22 +368,37 @@ void Game::Init()
 	exhibits[Bloom] = new Exhibit(40);
 	exhibits[Bloom]->AttachTo(exhibits[RightHall], POSZ);
 	GameEntity* neonlightObj1 = new GameEntity(cube, neonlight1);
+	GameEntity* neonlightObj4 = new GameEntity(cube, neonlight1);
 	entityList.push_back(neonlightObj1);
+	entityList.push_back(neonlightObj4);
 	neonlightObj1->GetTransform()->SetScale(1.0f, 12.0f, 12.0f);
+	neonlightObj4->GetTransform()->SetScale(1.0f, 12.0f, 12.0f);
 	neonlightObj1->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
+	neonlightObj4->GetTransform()->SetRotation(0.0f, XM_PI, 0.0f);
 	exhibits[Bloom]->PlaceObject(neonlightObj1, XMFLOAT3(10, 7, 19.5));
+	exhibits[Bloom]->PlaceObject(neonlightObj4, XMFLOAT3(19.5, 7, 10));
 
 	GameEntity* neonlightObj2 = new GameEntity(cube, neonlight2);
+	GameEntity* neonlightObj5 = new GameEntity(cube, neonlight2);
 	entityList.push_back(neonlightObj2);
+	entityList.push_back(neonlightObj5);
 	neonlightObj2->GetTransform()->SetScale(1.0f, 12.0f, 12.0f);
+	neonlightObj5->GetTransform()->SetScale(1.0f, 12.0f, 12.0f);
 	neonlightObj2->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
+	neonlightObj5->GetTransform()->SetRotation(0.0f, XM_PI, 0.0f);
 	exhibits[Bloom]->PlaceObject(neonlightObj2, XMFLOAT3(0, 7, 19.5));
+	exhibits[Bloom]->PlaceObject(neonlightObj5, XMFLOAT3(19.5, 7, 0));
 
 	GameEntity* neonlightObj3 = new GameEntity(cube, neonlight3);
+	GameEntity* neonlightObj6 = new GameEntity(cube, neonlight3);
 	entityList.push_back(neonlightObj3);
+	entityList.push_back(neonlightObj6);
 	neonlightObj3->GetTransform()->SetScale(1.0f, 12.0f, 12.0f);
+	neonlightObj6->GetTransform()->SetScale(1.0f, 12.0f, 12.0f);
 	neonlightObj3->GetTransform()->SetRotation(0.0f, XM_PIDIV2, 0.0f);
+	neonlightObj6->GetTransform()->SetRotation(0.0f, XM_PI, 0.0f);
 	exhibits[Bloom]->PlaceObject(neonlightObj3, XMFLOAT3(-10, 7, 19.5));
+	exhibits[Bloom]->PlaceObject(neonlightObj6, XMFLOAT3(19.5, 7, -10));
 
 	// particles
 	exhibits[Particles] = new Exhibit(45);
@@ -771,9 +786,8 @@ void Game::Draw(float deltaTime, float totalTime)
 	}
 	if(exhibitIndex == Bloom || exhibitIndex == Everything) {
 		ImGui::Checkbox(": bloom", &useBloom);
-		ImGui::DragFloat(": bloom blur sigma", &bloomBlurSigma, 0.01f, 0.0f, 20.0f);
-		ImGui::DragFloat(": bloom step size", &bloomBlurStepSize, 0.01f, 0.0f, 2.0f);
-		ImGui::DragFloat(": bloom blur radius", &bloomBlurRadius, 1.0f, 0.0f, 2.0f);
+		ImGui::DragFloat(": bloom blur sigma", &bloomBlurSigma, 0.01f, 0.0f, 10.0f);
+		ImGui::DragFloat(": bloom blur radius", &bloomBlurRadius, 0.01f, 0.0f, 5.0f);
 	}
 	if (exhibitIndex == Particles || exhibitIndex == Everything) {
 		ImGui::DragFloat(": particles per second", &particleManager->particlesPerSecond, 1, 1, 100);
@@ -972,7 +986,6 @@ void Game::PostRender()
 				pixelShaderBloomE->SetFloat("bloomSaturation", bloomSaturation);
 				pixelShaderBloomE->SetFloat("bloomBlurSigma", bloomBlurSigma);
 				pixelShaderBloomE->SetFloat("bloomBlurRadius", bloomBlurRadius);
-				pixelShaderBloomE->SetFloat("bloomBlurStepSize", bloomBlurStepSize);
 				pixelShaderBloomE->SetFloat("pixelWidth", 1.0f / width);
 				pixelShaderBloomE->SetFloat("pixelHeight", 1.0f / height);
 				pixelShaderBloomE->CopyAllBufferData();

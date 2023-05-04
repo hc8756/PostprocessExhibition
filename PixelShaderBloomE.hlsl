@@ -6,7 +6,6 @@ cbuffer externalData : register(b0)
     float bloomSaturation;
     float bloomBlurSigma;
     float bloomBlurRadius;
-    float bloomBlurStepSize;
     float pixelWidth;
     float pixelHeight;
 }
@@ -37,23 +36,23 @@ float4 main(VertexToPixel input) : SV_TARGET
     //  Gaussian blur
     const float offsets[15] = { -13.5f, -11.5f, -9.5f, -7.5f, -5.5f, -3.5f, -1.5f, 0, 1.5f, 3.5f, 5.5f, 7.5f, 9.5f, 11.5f, 13.5f };
     float4 blurColor = float4(0, 0, 0, 0);
-    float blurSize = bloomBlurRadius * bloomBlurStepSize;
-    float sigma = bloomBlurSigma * blurSize;
+   // float blurSize = bloomBlurRadius * bloomBlurRadius;
+    float sigma = bloomBlurSigma /** blurSize*/;
     for (int i = 0; i < 15; i++)
     {
         float weight = sigma * sigma;
-        float3 possibleAdd= pixels.Sample(samplerOptions, input.uv + float2(1, 0) * pixelWidth * offsets[i]).rgb * weight;
+        float3 possibleAdd=pixels.Sample(samplerOptions, input.uv + float2(0, 1) * pixelHeight * offsets[i] * bloomBlurRadius).rgb * weight;
+        if (isPrimary(possibleAdd)) {blurColor.rgb += possibleAdd;  }
+    }
+    //blurColor.rgb /= (2.0f * 15 + 1.0f);
+    for (int i = 0; i < 15; i++)
+    {
+        float weight = sigma * sigma;
+        float3 possibleAdd= pixels.Sample(samplerOptions, input.uv + float2(1, 0) * pixelWidth * offsets[i] * bloomBlurRadius).rgb * weight;
         if(isPrimary(possibleAdd)){blurColor.rgb += possibleAdd;}
         
     }
-    blurColor.rgb /= (2.0f * 15 + 1.0f);
-    for (int i = 0; i < 15; i++)
-    {
-        float weight = sigma * sigma;
-        float3 possibleAdd=pixels.Sample(samplerOptions, input.uv + float2(0, 1) * pixelHeight * offsets[i]).rgb * weight;
-        if (isPrimary(possibleAdd)) {blurColor.rgb += possibleAdd;  }
-    }
-    blurColor.rgb /= (2.0f * 15 + 1.0f);
+    blurColor.rgb /= (2.0f * 30 + 1.0f);
    
     if (luminance > bloomThreshold && isPrimary(color.rgb))
     {   

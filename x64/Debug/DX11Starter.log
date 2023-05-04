@@ -1,4 +1,4 @@
-﻿C:\Users\onlya\Desktop\IGME750\750project\PixelShaderBloomE.hlsl(50,14): warning X3078: 'i': loop control variable conflicts with a previous declaration in the outer scope; most recent declaration will be used
+﻿C:\Users\onlya\Desktop\IGME750\750project\PixelShaderBloomE.hlsl(48,14): warning X3078: 'i': loop control variable conflicts with a previous declaration in the outer scope; most recent declaration will be used
   
   compilation object save succeeded; see C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\PixelShaderBloomE.cso
   DX11Starter.vcxproj -> C:\Users\onlya\Desktop\IGME750\750project\x64\Debug\DX11Starter.exe

@@ -1,8 +1,8 @@
 ﻿  Game.cpp
 C:\Users\ethan\OneDrive\Documents\Github\750project\ParticleManager.h(28): warning C4305: 'initializing': truncation from 'double' to 'float'
 C:\Users\ethan\OneDrive\Documents\Github\750project\Game.h(116): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\Users\ethan\OneDrive\Documents\Github\750project\Game.cpp(293,110): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ethan\OneDrive\Documents\Github\750project\Game.cpp(293,83): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ethan\OneDrive\Documents\Github\750project\Game.cpp(293,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\ethan\OneDrive\Documents\Github\750project\Game.cpp(764,63): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\ethan\OneDrive\Documents\Github\750project\Game.cpp(286,110): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\ethan\OneDrive\Documents\Github\750project\Game.cpp(286,83): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\ethan\OneDrive\Documents\Github\750project\Game.cpp(286,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\ethan\OneDrive\Documents\Github\750project\Game.cpp(780,63): warning C4305: 'argument': truncation from 'double' to 'float'
   DX11Starter.vcxproj -> C:\Users\ethan\OneDrive\Documents\Github\750project\x64\Debug\DX11Starter.exe

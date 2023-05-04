@@ -457,6 +457,7 @@ void Game::CreateShadowMapResources()
 	shadowRastDesc.DepthBias = 1000; // Multiplied by (smallest possible positive value storable in the depth buffer)
 	shadowRastDesc.DepthBiasClamp = 0.0f;
 	shadowRastDesc.SlopeScaledDepthBias = 1.0f;
+	shadowRastDesc.FrontCounterClockwise = true;
 	device->CreateRasterizerState(&shadowRastDesc, &shadowRasterizer);
 
 	XMMATRIX shProj = XMMatrixOrthographicLH(shadowProjectionSize, shadowProjectionSize, 0.1f, 200.0f);

@@ -215,9 +215,20 @@ void Game::Init()
 	// create directional light
 	Light directionalLight1 = {};
 	directionalLight1.Type = 0;
-	//directionalLight1.Direction= XMFLOAT3(0.0f, -sin(XM_PI / 3), cos(XM_PI / 3)); // must match shadow map angle
+	directionalLight1.Direction = XMFLOAT3(0, -sin(XM_PI / 3), cos(XM_PI / 3)); // must match shadow map angle
+	XMVECTOR direction = XMVector3Rotate(
+		XMLoadFloat3(&directionalLight1.Direction),
+		XMQuaternionRotationRollPitchYawFromVector(XMVectorSet(0, XM_PI / 6, 0, 0))
+	);
+	XMStoreFloat3(&directionalLight1.Direction, direction);
+	/*XMVECTOR direction = XMVector3Rotate(
+		XMVectorSet(0, -1, 0, 0),
+		XMQuaternionRotationRollPitchYawFromVector(XMVectorSet(0, XM_PI / 6, XM_PI / 6, 0))
+	);
+	XMStoreFloat3(&directionalLight1.Direction, direction);*/
+
 	//directionalLight1.Direction = XMFLOAT3(0.0f, -1, 0);
-	directionalLight1.Direction = XMFLOAT3(0.0f, -1.0f, 0);
+	//directionalLight1.Direction = XMFLOAT3(0.0f, -1.0f, 0);
 	directionalLight1.Color= XMFLOAT3(0.1f, 0.1f, 0.1f);
 	directionalLight1.Intensity = 10.0f;
 	directionalLight1.CastsShadows = 1;
@@ -401,15 +412,12 @@ void Game::CreateShadowMapResources()
 	shadowProjectionSize = 200; // 100
 
 	// Create the "camera" matrices for the shadow map rendering
-	/*XMMATRIX shView = XMMatrixLookAtLH(
-		XMVectorSet(-42, 8, 0, 0),
-		XMVectorSet(10, 8, 0, 0),
-		XMVectorSet(0, 1, 0, 0));*/
 	XMMATRIX shView = XMMatrixLookAtLH(
-		XMVectorSet(0, 22, 70, 0),
+		XMVectorSet(0, 30, 70, 0),
 		XMVectorSet(0, 0, 70, 0),
 		XMVectorSet(0, 0, 1, 0));
-	//shView = XMMatrixRotationX(-XM_PI / 2) * shView;
+	shView = XMMatrixRotationX(XM_PI / 6) * shView;
+	shView = XMMatrixRotationY(-XM_PI / 6) * shView;
 	XMStoreFloat4x4(&shadowViewMatrix, shView);
 
 	// Create the actual texture that will be the shadow map

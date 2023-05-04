@@ -35,10 +35,10 @@ void Camera::Update(float dt)
 	if (input.KeyDown(VK_SPACE)) { transform.MoveAbsolute(0, speed, 0); }
 
 	// Limit vertical values
-	/*if (transform.GetPosition().y < 1) {
+	if (transform.GetPosition().y < 1) {
 		transform.SetPosition(transform.GetPosition().x, 1, transform.GetPosition().z);
 	}
-	else*/ if (transform.GetPosition().y > 20) {
+	else if (transform.GetPosition().y > 20) {
 		transform.SetPosition(transform.GetPosition().x, 20, transform.GetPosition().z);
 	}
 

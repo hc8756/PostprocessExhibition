@@ -118,6 +118,9 @@ Game::~Game()
 
 	delete sky;
 	sky = nullptr;
+
+	delete particleManager;
+	particleManager = nullptr;
 }
 
 // --------------------------------------------------------
@@ -188,28 +191,19 @@ void Game::Init()
 		context);
 
 	//create materials
-	Material* material1 = CreateMaterial(
+	Material* earthMat = CreateMaterial(
 		L"../../Assets/Textures/earth_albedo.jpg",
 		L"../../Assets/Textures/earth_normal.jpg",
 		L"../../Assets/Textures/earth_roughness.jpg",
 		nullptr
 	);
 
-	Material* material2 = CreateMaterial(
+	Material* moonMat = CreateMaterial(
 		L"../../Assets/Textures/moon_albedo.jpg",
 		L"../../Assets/Textures/moon_normal.jpg",
 		L"../../Assets/Textures/moon_roughness.jpg",
 		nullptr
 	);
-
-	Material* material3 = CreateMaterial(
-		L"../../Assets/Textures/cobblestone/cobblestone_albedo.png",
-		L"../../Assets/Textures/cobblestone/cobblestone_normal.png",
-		L"../../Assets/Textures/cobblestone/cobblestone_roughness.png",
-		L"../../Assets/Textures/cobblestone/cobblestone_metal.png"
-	);
-
-	//Create entities
 
 	//create camera 
 	camera = new Camera(0, 0, -10, 15.0f, 0.2f, XM_PIDIV4, (float)width / height);
@@ -218,7 +212,7 @@ void Game::Init()
 	defNormal = XMFLOAT3(+0.0f, +0.0f, -1.0f);
 	defUV = XMFLOAT2(+0.0f, +0.0f);
 
-	//Sunlight from the left
+	// create directional light
 	Light directionalLight1 = {};
 	directionalLight1.Type = 0;
 	//directionalLight1.Direction= XMFLOAT3(0.0f, -sin(XM_PI / 3), cos(XM_PI / 3)); // must match shadow map angle
@@ -235,10 +229,15 @@ void Game::Init()
 
 	// set up exhibits
 	Exhibit::cube = cube;
-	Exhibit::cobblestone = material3;
+	Exhibit::cobblestone = CreateMaterial(
+		L"../../Assets/Textures/cobblestone/cobblestone_albedo.png",
+		L"../../Assets/Textures/cobblestone/cobblestone_normals.png",
+		L"../../Assets/Textures/cobblestone/cobblestone_roughness.png",
+		L"../../Assets/Textures/cobblestone/cobblestone_metal.png"
+	);
 	Exhibit::marble = CreateMaterial(
 		L"../../Assets/Textures/marble/Marble_Tiles_001_basecolor.jpg",
-		L"../../Assets/Textures/marble/Marble_Tiles_001_normal.jpg",
+		nullptr,//L"../../Assets/Textures/marble/Marble_Tiles_001_normal.jpg",
 		L"../../Assets/Textures/marble/Marble_Tiles_001_roughness.jpg",
 		nullptr
 	);
@@ -407,7 +406,7 @@ void Game::CreateShadowMapResources()
 		XMVectorSet(10, 8, 0, 0),
 		XMVectorSet(0, 1, 0, 0));*/
 	XMMATRIX shView = XMMatrixLookAtLH(
-		XMVectorSet(0, 20, 70, 0),
+		XMVectorSet(0, 22, 70, 0),
 		XMVectorSet(0, 0, 70, 0),
 		XMVectorSet(0, 0, 1, 0));
 	//shView = XMMatrixRotationX(-XM_PI / 2) * shView;

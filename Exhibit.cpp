@@ -17,7 +17,6 @@ Exhibit::Exhibit(float size)
 	// create floor
 	GameEntity* floor = new GameEntity(cube, cobblestone);
 	//mainEntityList->push_back(floor); // use Game.cpp entity list so that it draws and deletes automatically
-	floor->GetTransform()->SetRotation(0, 0, XM_PI);
 	floor->GetTransform()->SetScale(size, THICKNESS, size);
 	surfaces->push_back(floor); // floor must be first in the list
 

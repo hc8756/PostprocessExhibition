@@ -602,6 +602,7 @@ void Game::OnResize()
 {
 	// Handle base-level DX resize stuff
 	DXCore::OnResize();
+	ResizePostProcessResources();
 	if (camera)
 	{
 		camera->UpdateProjectionMatrix((float)width / height);

@@ -206,7 +206,7 @@ void Game::Init()
 	);
 
 	//create camera 
-	camera = new Camera(0, 0, -10, 15.0f, 0.2f, XM_PIDIV4, (float)width / height);
+	camera = new Camera(0, 6, -10, 15.0f, 0.2f, XM_PIDIV4, (float)width / height);
 
 	//default normal and uv values
 	defNormal = XMFLOAT3(+0.0f, +0.0f, -1.0f);
@@ -215,9 +215,13 @@ void Game::Init()
 	// create directional light
 	Light directionalLight1 = {};
 	directionalLight1.Type = 0;
-	//directionalLight1.Direction= XMFLOAT3(0.0f, -sin(XM_PI / 3), cos(XM_PI / 3)); // must match shadow map angle
-	//directionalLight1.Direction = XMFLOAT3(0.0f, -1, 0);
-	directionalLight1.Direction = XMFLOAT3(0.0f, -1.0f, 0);
+	directionalLight1.Direction = XMFLOAT3(0, -sin(XM_PI / 3), cos(XM_PI / 3)); // must match shadow map angle
+	XMVECTOR direction = XMVector3Rotate(
+		XMLoadFloat3(&directionalLight1.Direction),
+		XMQuaternionRotationRollPitchYawFromVector(XMVectorSet(0, XM_PI / 6, 0, 0))
+	);
+	XMStoreFloat3(&directionalLight1.Direction, direction);
+
 	directionalLight1.Color= XMFLOAT3(0.1f, 0.1f, 0.1f);
 	directionalLight1.Intensity = 10.0f;
 	directionalLight1.CastsShadows = 1;
@@ -348,9 +352,21 @@ void Game::Init()
 	// halls
 	exhibits[LeftHall] = new Exhibit(20);
 	exhibits[LeftHall]->AttachTo(exhibits[BrightContrast], POSZ);
+	GameEntity* hallToBright = MakeSign(brightnessSignMat);
+	hallToBright->GetTransform()->SetRotation(0, XM_PIDIV2, 0);
+	exhibits[LeftHall]->PlaceObject(hallToBright, XMFLOAT3(-6.5f, 7.5f, -9.5f));
+	GameEntity* hallToCel = MakeSign(celSignMat);
+	hallToCel->GetTransform()->SetRotation(0, XM_PIDIV2, 0);
+	exhibits[LeftHall]->PlaceObject(hallToCel, XMFLOAT3(-6.5f, 7.5f, 9.5f));
 
 	exhibits[RightHall] = new Exhibit(20);
 	exhibits[RightHall]->AttachTo(exhibits[Blur], POSZ);
+	GameEntity* hallToBlur = MakeSign(blurSignMat);
+	hallToBlur->GetTransform()->SetRotation(0, XM_PIDIV2, 0);
+	exhibits[RightHall]->PlaceObject(hallToBlur, XMFLOAT3(6.5f, 7.5f, -9.5f));
+	GameEntity* hallToBloom = MakeSign(bloomSignMat);
+	hallToBloom->GetTransform()->SetRotation(0, XM_PIDIV2, 0);
+	exhibits[RightHall]->PlaceObject(hallToBloom, XMFLOAT3(6.5f, 7.5f, 9.5f));
 
 	// cel shading exhibit
 	exhibits[CelShading] = new Exhibit(40);
@@ -363,6 +379,8 @@ void Game::Init()
 	statue->GetTransform()->SetRotation(XM_PIDIV2, -XM_PIDIV2, 0);
 	entityList.push_back(statue);
 	exhibits[CelShading]->PlaceObject(statue, XMFLOAT3(0.0f, 0.0f, 0.0f));
+	GameEntity* celToParticle = MakeSign(particleSignMat);
+	exhibits[CelShading]->PlaceObject(celToParticle, XMFLOAT3(19.5f, 7.5f, 7.0f));
 
 	// bloom & emmisive
 	exhibits[Bloom] = new Exhibit(40);
@@ -399,6 +417,11 @@ void Game::Init()
 	neonlightObj6->GetTransform()->SetRotation(0.0f, XM_PI, 0.0f);
 	exhibits[Bloom]->PlaceObject(neonlightObj3, XMFLOAT3(-10, 7, 19.5));
 	exhibits[Bloom]->PlaceObject(neonlightObj6, XMFLOAT3(19.5, 7, -10));
+	//GameEntity* bloomSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 0.0f, 2.55f)));
+	//entityList.push_back(bloomSphere);
+	//exhibits[Bloom]->PlaceObject(bloomSphere, XMFLOAT3(1.0f, 5.0f, 0.0f));
+	GameEntity* bloomToParticle = MakeSign(particleSignMat);
+	exhibits[Bloom]->PlaceObject(bloomToParticle, XMFLOAT3(-19.5f, 7.5f, 7.0f));
 
 	// particles
 	exhibits[Particles] = new Exhibit(45);
@@ -409,6 +432,13 @@ void Game::Init()
 	pmStartPos.z /= 2;
 	pmStartPos.y += 2;
 	particleManager = new ParticleManager(device, pmStartPos);
+	GameEntity* particleToCel = MakeSign(celSignMat);
+	exhibits[Particles]->PlaceObject(particleToCel, XMFLOAT3(-22.0f, 7.5f, 7.0f));
+	GameEntity* particleToBloom = MakeSign(bloomSignMat);
+	exhibits[Particles]->PlaceObject(particleToBloom, XMFLOAT3(22.0f, 7.5f, 7.0f));
+	GameEntity* everythingSign = MakeSign(CreateMaterial(L"../../Assets/Textures/signs/everything sign.png", nullptr, nullptr, nullptr));
+	everythingSign->GetTransform()->SetRotation(0, XM_PIDIV2, 0);
+	exhibits[Particles]->PlaceObject(everythingSign, XMFLOAT3(7.0f, 7.5f, 22.0f));
 
 	// final exhibit
 	exhibits[Everything] = new Exhibit(70);
@@ -419,18 +449,15 @@ void Game::CreateShadowMapResources()
 {
 	// Create shadow requirements ------------------------------------------
 	shadowMapResolution = 10240; // 5120;
-	shadowProjectionSize = 200; // 100
+	shadowProjectionSize = 230; // 100
 
 	// Create the "camera" matrices for the shadow map rendering
-	/*XMMATRIX shView = XMMatrixLookAtLH(
-		XMVectorSet(-42, 8, 0, 0),
-		XMVectorSet(10, 8, 0, 0),
-		XMVectorSet(0, 1, 0, 0));*/
 	XMMATRIX shView = XMMatrixLookAtLH(
-		XMVectorSet(0, 22, 70, 0),
+		XMVectorSet(0, 30, 70, 0),
 		XMVectorSet(0, 0, 70, 0),
 		XMVectorSet(0, 0, 1, 0));
-	//shView = XMMatrixRotationX(-XM_PI / 2) * shView;
+	shView = XMMatrixRotationX(XM_PI / 6) * shView;
+	shView = XMMatrixRotationY(-XM_PI / 6) * shView;
 	XMStoreFloat4x4(&shadowViewMatrix, shView);
 
 	// Create the actual texture that will be the shadow map

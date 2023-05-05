@@ -225,7 +225,6 @@ void Game::Init()
 	directionalLight1.Color= XMFLOAT3(0.1f, 0.1f, 0.1f);
 	directionalLight1.Intensity = 10.0f;
 	directionalLight1.CastsShadows = 1;
-	//add entities to the entitiy list
 	lightList.push_back(directionalLight1);
 
 	firstPerson = true;
@@ -241,7 +240,7 @@ void Game::Init()
 	);
 	Exhibit::marble = CreateMaterial(
 		L"../../Assets/Textures/marble/Marble_Tiles_001_basecolor.jpg",
-		nullptr,//L"../../Assets/Textures/marble/Marble_Tiles_001_normal.jpg",
+		L"../../Assets/Textures/marble/Marble_Tiles_001_normal.jpg",
 		L"../../Assets/Textures/marble/Marble_Tiles_001_roughness.jpg",
 		nullptr
 	);
@@ -417,9 +416,6 @@ void Game::Init()
 	neonlightObj6->GetTransform()->SetRotation(0.0f, XM_PI, 0.0f);
 	exhibits[Bloom]->PlaceObject(neonlightObj3, XMFLOAT3(-10, 7, 19.5));
 	exhibits[Bloom]->PlaceObject(neonlightObj6, XMFLOAT3(19.5, 7, -10));
-	//GameEntity* bloomSphere = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.55f, 0.0f, 2.55f)));
-	//entityList.push_back(bloomSphere);
-	//exhibits[Bloom]->PlaceObject(bloomSphere, XMFLOAT3(1.0f, 5.0f, 0.0f));
 	GameEntity* bloomToParticle = MakeSign(particleSignMat);
 	exhibits[Bloom]->PlaceObject(bloomToParticle, XMFLOAT3(-19.5f, 7.5f, 7.0f));
 
@@ -443,6 +439,8 @@ void Game::Init()
 	// final exhibit
 	exhibits[Everything] = new Exhibit(70);
 	exhibits[Everything]->AttachTo(exhibits[Particles], POSZ);
+
+
 }
 
 void Game::CreateShadowMapResources()
@@ -820,7 +818,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		ImGui::DragFloat(": particles per second", &particleManager->particlesPerSecond, 1, 1, 100);
 		ImGui::DragFloat(": velocity", &particleManager->velocityRange, 0.01f, 0.0f, 5.0f);
 		ImGui::DragFloat(": particle size", &particleManager->particleSize, 0.01f, 0.1f, 1.0f);
-		ImGui::ColorEdit4("particle color", &particleManager->particleColor.x);
+		ImGui::ColorEdit4(": particle color", &particleManager->particleColor.x);
 	}
 
 	ImGui::End();

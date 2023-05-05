@@ -122,6 +122,12 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11BlendState> particleBlendState;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> particleDebugRasterState;
 
+	float earthRotation = 0.0f;
+	float moonRotation = 0.0f;
+	GameEntity* sun;
+	GameEntity* earth;
+	GameEntity* moon;
+
 	//my models
 	Mesh* cube;
 	Mesh* sphere;

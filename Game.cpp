@@ -190,21 +190,6 @@ void Game::Init()
 		device,
 		context);
 
-	//create materials
-	Material* earthMat = CreateMaterial(
-		L"../../Assets/Textures/earth_albedo.jpg",
-		L"../../Assets/Textures/earth_normal.jpg",
-		L"../../Assets/Textures/earth_roughness.jpg",
-		nullptr
-	);
-
-	Material* moonMat = CreateMaterial(
-		L"../../Assets/Textures/moon_albedo.jpg",
-		L"../../Assets/Textures/moon_normal.jpg",
-		L"../../Assets/Textures/moon_roughness.jpg",
-		nullptr
-	);
-
 	//create camera 
 	camera = new Camera(0, 6, -10, 15.0f, 0.2f, XM_PIDIV4, (float)width / height);
 
@@ -440,7 +425,39 @@ void Game::Init()
 	exhibits[Everything] = new Exhibit(70);
 	exhibits[Everything]->AttachTo(exhibits[Particles], POSZ);
 
+	Material* earthMat = CreateMaterial(
+		L"../../Assets/Textures/earth_albedo.jpg",
+		L"../../Assets/Textures/earth_normal.jpg",
+		L"../../Assets/Textures/earth_roughness.jpg",
+		nullptr
+	);
 
+	Material* moonMat = CreateMaterial(
+		L"../../Assets/Textures/moon_albedo.jpg",
+		L"../../Assets/Textures/moon_normal.jpg",
+		L"../../Assets/Textures/moon_roughness.jpg",
+		nullptr
+	);
+
+	sun = new GameEntity(sphere, CreateColorMaterial(XMFLOAT3(2.25f, 0.1f, 0.0f)));
+	entityList.push_back(sun);
+	sun->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
+	sun->GetTransform()->SetScale(6.0f, 6.0f, 6.0f);
+	exhibits[Everything]->PlaceObject(sun, DirectX::XMFLOAT3(0, 10, 0));
+
+	earth = new GameEntity(sphere, earthMat);
+	entityList.push_back(earth);
+	earth->GetTransform()->SetPosition(0.0f, 0.0f, 0.0f);
+	earth->GetTransform()->SetScale(3.0f, 3.0f, 3.0f);
+
+	moon = new GameEntity(sphere, moonMat);
+	entityList.push_back(moon);
+	moon->GetTransform()->SetPosition(1.0f, 0.0f, 0.0f);
+	moon->GetTransform()->SetScale(0.75f, 0.75f, 0.75f);
+
+	ditherObjects.push_back(earth);
+	ditherObjects.push_back(moon);
+	ditherObjects.push_back(sun);
 }
 
 void Game::CreateShadowMapResources()
@@ -725,6 +742,8 @@ void Game::Update(float deltaTime, float totalTime)
 			contrast = 1;
 			blur = 1;
 			transparency = 0.0f;
+			bloomBlurSigma = 1.0f;
+			bloomBlurRadius = 1.0f;
 			for (GameEntity* entity : ditherObjects) {
 				entity->GetMaterial()->SetTransparency(transparency);
 			}
@@ -739,6 +758,17 @@ void Game::Update(float deltaTime, float totalTime)
 		camera->Update(deltaTime);
 	}
 	particleManager->UpdateParticles(deltaTime);
+
+	// move earth and moon
+	const float earthRadius = 14.0f;
+	const float moonRadius = 6.0f;
+	earthRotation += XM_PIDIV4 * deltaTime;
+	moonRotation += XM_PIDIV2 * deltaTime;
+
+	XMFLOAT3 sunPos = sun->GetTransform()->GetPosition();
+	earth->GetTransform()->SetPosition(sunPos.x + earthRadius * cos(earthRotation), sunPos.y, sunPos.z + earthRadius * sin(earthRotation));
+	XMFLOAT3 earthPos = earth->GetTransform()->GetPosition();
+	moon->GetTransform()->SetPosition(earthPos.x + moonRadius * cos(moonRotation), earthPos.y, earthPos.z + moonRadius * sin(moonRotation));
 }
 
 // --------------------------------------------------------
